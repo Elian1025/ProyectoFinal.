@@ -73,8 +73,10 @@ function initWelcome() {
 
   if (!welcomeScreen || !startBtn) return;
 
-  startBtn.addEventListener('click', () => {
+  startBtn.addEventListener('click', (event) => {
+    event.preventDefault();
     document.body.classList.add('welcome-done');
+    welcomeScreen.classList.add('is-exiting');
     setTimeout(() => {
       welcomeScreen.style.display = 'none';
     }, 750);
