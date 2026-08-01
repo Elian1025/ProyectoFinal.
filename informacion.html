@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Información personal del portafolio" />
+    <title>Información | Portafolio Personal</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="particles"></canvas>
+
+    <div class="page-shell">
+      <header class="main-header">
+        <a class="brand" href="index.html#inicio">Portafolio</a>
+        <nav class="nav-links">
+          <a href="index.html#inicio">Inicio</a>
+          <a href="informacion.html">Información</a>
+          <a href="aprendizaje.html">Aprendizaje</a>
+          <a href="index.html#contacto">Contacto</a>
+        </nav>
+        <button class="theme-toggle" id="theme-toggle" type="button">Personalizar</button>
+      </header>
+
+      <div class="theme-panel" id="theme-panel">
+        <h3>Selector de temas</h3>
+        <label>
+          Fondo
+          <input id="background-color" type="color" />
+        </label>
+        <label>
+          Botones
+          <input id="button-color" type="color" />
+        </label>
+        <label>
+          Texto
+          <input id="text-color" type="color" />
+        </label>
+        <label>
+          Tema
+          <select id="theme-select">
+            <option value="dark">Oscuro</option>
+            <option value="light">Claro</option>
+          </select>
+        </label>
+        <button id="save-theme" type="button">Guardar diseño</button>
+      </div>
+
+      <main>
+        <section class="section reveal" id="informacion">
+          <div class="section-heading">
+            <h2>Información personal</h2>
+          </div>
+          <div class="info-grid active">
+            <article class="info-card">
+              <h3>Presentación personal</h3>
+              <p>Me considero un estudiante comprometido, curioso y enfocado en construir soluciones tecnológicas útiles, limpias y eficientes.</p>
+            </article>
+            <article class="info-card">
+              <h3>Objetivos</h3>
+              <p>Desarrollar soluciones mediante programación, diseño de software y trabajo colaborativo para impactar positivamente en proyectos reales.</p>
+            </article>
+            <article class="info-card">
+              <h3>Perfil profesional</h3>
+              <p>Interés en backend, cyberseguridad, bases de datos y automatización con enfoque en calidad, seguridad y experiencia de usuario.</p>
+            </article>
+            <article class="info-card">
+              <h3>Intereses</h3>
+              <p>Inteligencia artificial, desarrollo web, ciberseguridad, arquitectura de software, innovación y emprendimiento tecnológico.</p>
+            </article>
+            <article class="info-card">
+              <h3>Habilidades técnicas</h3>
+              <p>HTML, CSS, JavaScript, Python, lógica de programación, pensamiento crítico, resolución de problemas y aprendizaje continuo.</p>
+            </article>
+            <article class="info-card">
+              <h3>Lenguajes de programación</h3>
+              <p>JavaScript, Python, Java, C++ y SQL.</p>
+            </article>
+            <article class="info-card">
+              <h3>Bases de datos</h3>
+              <p>MySQL, PostgreSQL y diseño de modelos relacionales.</p>
+            </article>
+            <article class="info-card">
+              <h3>Herramientas utilizadas</h3>
+              <p>VS Code, Git, GitHub, Figma, Node.js, Bootstrap y herramientas de gestión de proyectos.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <a class="whatsapp-fab" href="https://wa.me/593998618385" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.149-.174.199-.297.299-.495.099-.198.05-.372-.025-.521-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.372-.01-.571-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.073.149.198 2.099 3.2 5.076 4.487.709.306 1.262.49 1.694.626.712.227 1.36.195 1.873.118.572-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.174-1.413-.074-.123-.272-.198-.57-.347z"></path>
+      </svg>
+    </a>
+
+    <script src="script.js"></script>
+  </body>
+</html>
