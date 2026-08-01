@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portafolio personal de Ingeniería en Software" />
+    <title>Portafolio Personal</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="particles"></canvas>
+
+    <section class="welcome-screen" aria-label="Pantalla de bienvenida">
+      <div class="welcome-glow"></div>
+      <div class="welcome-content reveal visible">
+        <span class="welcome-badge">Portafolio digital</span>
+        <h1>Universidad Técnica de Cotopaxi</h1>
+        <button class="start-btn" type="button">INICIO</button>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <header class="main-header">
+        <a class="brand" href="#inicio">Portafolio</a>
+        <nav class="nav-links">
+          <a href="#inicio">Inicio</a>
+          <a href="#informacion">Información</a>
+          <a href="#aprendizaje">Aprendizaje</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+        <button class="theme-toggle" id="theme-toggle" type="button">Personalizar</button>
+      </header>
+
+      <div class="theme-panel" id="theme-panel">
+        <h3>Selector de temas</h3>
+        <label>
+          Fondo
+          <input id="background-color" type="color" />
+        </label>
+        <label>
+          Botones
+          <input id="button-color" type="color" />
+        </label>
+        <label>
+          Texto
+          <input id="text-color" type="color" />
+        </label>
+        <label>
+          Tema
+          <select id="theme-select">
+            <option value="dark">Oscuro</option>
+            <option value="light">Claro</option>
+          </select>
+        </label>
+        <button id="save-theme" type="button">Guardar diseño</button>
+      </div>
+
+      <main id="inicio">
+        <section class="section hero reveal">
+          <div>
+            <span class="eyebrow">Ingeniería en Software</span>
+            <h2>Anthony Elian Satuquinga Tituaña</h2>
+            <p class="career">Estudiante de Ingeniería en Software</p>
+            <p class="university">Universidad Técnica de Cotopaxi</p>
+            <p>
+              Soy una persona apasionada por la tecnología, el desarrollo de software y la resolución de problemas mediante soluciones creativas .
+            </p>
+            <div class="hero-list">
+              <div>📍 Ciudad: Pillaro, Ecuador</div>
+              <div>📧 Correo: anthoy.satuquinga3982@utc.edu.ec</div>
+              <div>📞 Teléfono: +593 998 618 385</div>
+            </div>
+            <div class="actions">
+              <a class="btn" href="#informacion">Más información</a>
+              <a class="btn secondary" href="#aprendizaje">Aprendizaje</a>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <div class="photo-frame">
+              <span class="code-float code-1">&lt;/&gt;</span>
+              <span class="code-float code-2">{ }</span>
+              <span class="code-float code-3">npm</span>
+              <div style="text-align:center; color:var(--muted);">
+                <strong>Tu foto aquí</strong>
+                <p style="margin-top:0.5rem;">Reemplaza esta sección con una imagen personal.</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3>Información personal</h3>
+              <ul>
+                <li>• Nombre completo: Anthony Elian Satuquinga Tituaña</li>
+                <li>• Carrera: Ingeniería en Software</li>
+                <li>• Universidad: Universidad Técnica de Cotopaxi</li>
+                <li>• Redes: GitHub • LinkedIn • Instagram</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="informacion">
+          <div class="section-heading">
+            <h2>Información personal</h2>
+            <button class="btn" type="button" id="info-toggle">MÁS INFORMACIÓN</button>
+          </div>
+          <div class="info-grid" id="info-grid">
+            <article class="info-card">
+              <h3>Presentación personal</h3>
+              <p>Me considero un estudiante comprometido, curioso y enfocado en construir soluciones tecnológicas útiles, limpias y eficientes.</p>
+            </article>
+            <article class="info-card">
+              <h3>Objetivos</h3>
+              <p>Desarrollar soluciones mediante programación, diseño de software y trabajo colaborativo para impactar positivamente en proyectos reales.</p>
+            </article>
+            <article class="info-card">
+              <h3>Perfil profesional</h3>
+              <p>Interés en backend, cyberseguridad, bases de datos y automatización con enfoque en calidad, seguridad y experiencia de usuario.</p>
+            </article>
+            <article class="info-card">
+              <h3>Intereses</h3>
+              <p>Inteligencia artificial, desarrollo web, ciberseguridad, arquitectura de software, innovación y emprendimiento tecnológico.</p>
+            </article>
+            <article class="info-card">
+              <h3>Habilidades técnicas</h3>
+              <p>HTML, CSS, JavaScript, Python, lógica de programación, pensamiento crítico, resolución de problemas y aprendizaje continuo.</p>
+            </article>
+            <article class="info-card">
+              <h3>Lenguajes de programación</h3>
+              <p>JavaScript, Python, Java, C++ y SQL.</p>
+            </article>
+            <article class="info-card">
+              <h3>Bases de datos</h3>
+              <p>MySQL, PostgreSQL y diseño de modelos relacionales.</p>
+            </article>
+            <article class="info-card">
+              <h3>Herramientas utilizadas</h3>
+              <p>VS Code, Git, GitHub, Figma, Node.js, Bootstrap y herramientas de gestión de proyectos.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section reveal" id="aprendizaje">
+          <div class="section-heading">
+            <h2>Aprendizaje</h2>
+            <button class="btn" type="button" id="unit-toggle-main">APRENDIZAJE</button>
+          </div>
+          <div class="unit-grid" id="unit-grid">
+            <article class="unit-card">
+              <h3>Unidad 1</h3>
+              <p>Introducción a los fundamentos del desarrollo de software y la lógica computacional.</p>
+              <button class="unit-toggle" data-target="unit1" type="button">Ver más</button>
+              <div class="unit-details" id="unit1">
+                <h4>Detalles de la unidad</h4>
+                <ul>
+                  <li>Introducción</li>
+                  <li>Temas aprendidos</li>
+                  <li>Actividades</li>
+                  <li>Prácticas</li>
+                  <li>Conclusiones</li>
+                  <li>Evidencias</li>
+                  <li>Imágenes</li>
+                  <li>Archivos</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="unit-card">
+              <h3>Unidad 2</h3>
+              <p>Aplicación de metodologías y herramientas para construir soluciones más complejas.</p>
+              <button class="unit-toggle" data-target="unit2" type="button">Ver más</button>
+              <div class="unit-details" id="unit2">
+                <h4>Detalles de la unidad</h4>
+                <ul>
+                  <li>Introducción</li>
+                  <li>Temas aprendidos</li>
+                  <li>Proyectos</li>
+                  <li>Ejercicios</li>
+                  <li>Conclusiones</li>
+                  <li>Imágenes</li>
+                  <li>Archivos</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="unit-card">
+              <h3>Unidad 3</h3>
+              <p>Desarrollo de proyectos integradores con enfoque en la presentación y documentación.</p>
+              <button class="unit-toggle" data-target="unit3" type="button">Ver más</button>
+              <div class="unit-details" id="unit3">
+                <h4>Detalles de la unidad</h4>
+                <ul>
+                  <li>Introducción</li>
+                  <li>Temas aprendidos</li>
+                  <li>Proyecto final</li>
+                  <li>Conclusiones</li>
+                  <li>Galería</li>
+                  <li>Documentos</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section reveal" id="contacto">
+          <div class="contact-card">
+            <div>
+              <h3>Contacto</h3>
+              <p>Correo: anthony.satuquinga3982@utc.edu.ec</p>
+              <p>Teléfono: +593 998 618 385</p>
+              <p>Ciudad: Pillaro, Ecuador</p>
+            </div>
+            <a class="btn" href="https://wa.me/593998618385" target="_blank" rel="noopener">Contactar por WhatsApp</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <a class="whatsapp-fab" href="https://wa.me/593998618385" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.149-.174.199-.297.299-.495.099-.198.05-.372-.025-.521-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5 -.669 -.51 -.173 -.008 -.372 -.01 -.571 -.01 -.198 0 -.52 .074 -.792 .372 -.272 .297 -1.04 1.016 -1.04 2.479 0 1.462 
+
+    <script src="script.js"></script>
+  </body>
+</html>
 
