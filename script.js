@@ -1069,6 +1069,12 @@ function renderUnitPage(unitData) {
   // Utilities
   const topicIndex = (unitData.temas || []).reduce((acc, t) => { acc[String(t.id)] = t; return acc; }, {});
   let currentTopicId = null;
+  const unitFolder = unitData.folder || location.pathname.replace(/^.*\//, '').replace(/\.html$/, '');
+  const resolveUnitImage = (name) => {
+    if (!name) return '';
+    if (name.startsWith('assets/')) return name;
+    return `assets/img/${unitFolder}/${name}`;
+  };
 
   // Render a topic into the main area
   function buildTopicTabs(topic) {
@@ -1093,10 +1099,10 @@ function renderUnitPage(unitData) {
     titleEl.textContent = t.titulo || '';
     descEl.textContent = t.descripcion || t.introduccion || '';
     const imageSource = t.img
-      ? `assets/img/unidad1/${t.img}`
+      ? resolveUnitImage(t.img)
       : (t.galeria && t.galeria[0]
-        ? `assets/img/unidad1/${t.galeria[0]}`
-        : (t.imagenes && t.imagenes[0] ? `assets/img/unidad1/${t.imagenes[0]}` : ''));
+        ? resolveUnitImage(t.galeria[0])
+        : (t.imagenes && t.imagenes[0] ? resolveUnitImage(t.imagenes[0]) : ''));
     mediaImg.src = imageSource;
     mediaImg.alt = t.titulo || 'Imagen del tema';
 
@@ -1144,7 +1150,7 @@ function renderUnitPage(unitData) {
 
     // Gallery
     galleryWrap.innerHTML = '';
-    const topicImages = ((t.galeria && t.galeria.length) ? t.galeria : (t.imagenes || [])).map((imgName) => `assets/img/unidad1/${imgName}`);
+    const topicImages = ((t.galeria && t.galeria.length) ? t.galeria : (t.imagenes || [])).map(resolveUnitImage);
     if (topicImages.length) {
       const gal = create('div');
       gal.style.display = 'grid';
@@ -1176,7 +1182,7 @@ function renderUnitPage(unitData) {
 
     unitGallerySection.style.display = '';
     unitGalleryWrap.innerHTML = '';
-    const unitImages = unitData.galeria.map((name) => `assets/img/unidad1/${name}`);
+    const unitImages = (unitData.galeria || []).map(resolveUnitImage);
     const grid = create('div');
     grid.style.display = 'grid';
     grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(140px,1fr))';
