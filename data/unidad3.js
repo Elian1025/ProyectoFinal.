@@ -1,10 +1,13 @@
 /* data/unidad3.js */
 const unidad3 = {
   titulo: "Unidad 3",
-  descripcion: "Temas avanzados.",
+  descripcion: "Fundamentos de programación y estructuras de control.",
+  galeria: [],
   temas: [
-    { id: 1, titulo: "Tema 3.1", descripcion: "Descripción breve del tema 3.1", img: "tema1.jpg" },
-    { id: 2, titulo: "Tema 3.2", descripcion: "Descripción breve del tema 3.2", img: "tema2.jpg" }
-  ],
-  galeria: ["u3_img1.jpg","u3_img2.jpg"]
+    { id: 'lenguajes-paradigmas', titulo: 'Lenguajes y paradigmas', descripcion: '' },
+    { id: 'introduccion-python', titulo: 'Introducción a Python', descripcion: '' },
+    { id: 'operadores', titulo: 'Operadores', descripcion: '' },
+    { id: 'condicionales', titulo: 'Condicionales', descripcion: '' },
+    { id: 'repetitivas', titulo: 'Repetitivas', descripcion: '' }
+  ]
 };
