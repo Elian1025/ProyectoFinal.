@@ -194,6 +194,33 @@ function initSmoothScroll() {
   });
 }
 
+function initPageTransitions() {
+  // Entrada suave
+  document.body.classList.add('page-enter');
+  setTimeout(() => document.body.classList.remove('page-enter'), 650);
+
+  // Interceptar enlaces de navegación interna para animar salida
+  document.querySelectorAll('a').forEach((link) => {
+    const href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#')) return;
+    if (href.startsWith('mailto:') || link.target === '_blank') return;
+    try {
+      const url = new URL(href, location.href);
+      if (url.origin !== location.origin) return;
+    } catch (e) {
+      return;
+    }
+
+    link.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const dest = link.href;
+      document.body.classList.add('page-exit');
+      setTimeout(() => (window.location.href = dest), 360);
+    });
+  });
+}
+
 function init() {
   applyTheme();
   initThemeControls();
@@ -204,6 +231,7 @@ function init() {
   initLearningToggle();
   initParticles();
   initSmoothScroll();
+  initPageTransitions();
 }
 
 document.addEventListener('DOMContentLoaded', init);
