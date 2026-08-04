@@ -818,3 +818,55 @@ body { cursor: none; }
   :root { --cursor-size: 14px; }
   .unit-grid { grid-template-columns: 1fr; }
 }
+
+/* Preset panel (floating) */
+.preset-panel {
+  position: fixed;
+  left: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 9998;
+  font-size: 0.95rem;
+}
+.preset-toggle {
+  width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.preset-body {
+  display: none; width: 320px; padding: 0.9rem; margin-top: 0.6rem; border-radius: 14px;
+  background: linear-gradient(180deg, rgba(10,12,20,0.85), rgba(10,12,20,0.72)); border:1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px) saturate(120%);
+}
+.preset-body.open { display: block; }
+.preset-body h3 { margin: 0.4rem 0; color: var(--muted); }
+.preset-themes, .preset-bgs { display:flex; flex-wrap:wrap; gap:0.45rem; }
+.preset-theme, .preset-bg { padding:0.45rem 0.6rem; border-radius: 10px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); color:var(--text); cursor:pointer; }
+.preset-theme:hover, .preset-bg:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.45); }
+
+/* Background presets */
+.bg-espacio {
+  background: radial-gradient(ellipse at 20% 10%, #0b1020 0%, transparent 25%), linear-gradient(180deg, #020617 0%, #05122a 60%);
+}
+.bg-galaxia {
+  background: radial-gradient(circle at 10% 30%, rgba(255,0,128,0.04), transparent 8%), linear-gradient(180deg, #050017 0%, #13032a 60%);
+}
+.bg-circuitos {
+  background: linear-gradient(180deg, #02040a 0%, #051022 60%), repeating-linear-gradient(0deg, rgba(0,229,255,0.02), rgba(0,229,255,0.02) 1px, transparent 1px, transparent 24px);
+}
+.bg-tecnologia {
+  background: linear-gradient(180deg, #070a14 0%, #0b1422 60%), radial-gradient(circle at 90% 10%, rgba(139,92,246,0.03), transparent 10%);
+}
+.bg-cyberpunk {
+  background: radial-gradient(circle at 85% 10%, rgba(255,0,128,0.05), transparent 8%), linear-gradient(180deg, #050006 0%, #170a12 60%);
+}
+.bg-aurora {
+  background: linear-gradient(180deg, #021017 0%, #06122b 60%), radial-gradient(circle at 10% 80%, rgba(0,229,255,0.04), transparent 8%);
+}
+.bg-minimalista {
+  background: linear-gradient(180deg, var(--bg), rgba(0,0,0,0) 60%);
+}
+
+/* RGB animated background */
+@keyframes rgbShift { 0% { filter: hue-rotate(0deg);} 50% { filter: hue-rotate(60deg);} 100% { filter: hue-rotate(360deg);} }
+.rgb-animated { animation: rgbShift 8s linear infinite; }
+
