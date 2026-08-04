@@ -779,5 +779,8 @@ const temasUnidad1 = [
 const unidad1 = {
   titulo: 'Unidad 1',
   descripcion: 'Conceptos esenciales sobre arquitectura de computadores y lógica digital.',
+  galeria: [
+    'u1_img1.jpg'
+  ],
   temas: temasUnidad1
 };
