@@ -444,67 +444,218 @@ function renderIndex() {
 }
 
 function renderInformacion() {
-  const grid = document.getElementById('profile-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  if (typeof perfil !== 'undefined') {
-    const fields = [
-      {k:'descripcion', t:'Presentación'},
-      {k:'objetivos', t:'Objetivos'},
-      {k:'perfil', t:'Perfil Profesional'},
-      {k:'educacion', t:'Educación'},
-      {k:'universidad', t:'Universidad'},
-      {k:'carrera', t:'Carrera'},
-      {k:'hobbies', t:'Hobbies'},
-      {k:'residencia', t:'Residencia'},
-      {k:'contacto', t:'Contacto'}
-    ];
+  const root = document.getElementById('profile-grid');
+  const galleryRoot = document.getElementById('personal-gallery');
+  if (!root) return;
+  root.innerHTML = '';
+  if (typeof perfil === 'undefined') return;
 
-    // Map perfil fields to cards (use available perfil properties)
-    const cardData = [
-      {title:'Presentación', body: perfil.descripcion || ''},
-      {title:'Objetivos', body: perfil.objetivos || ''},
-      {title:'Perfil Profesional', body: perfil.perfil || ''},
-      {title:'Educación', body: perfil.educacion || ''},
-      {title:'Universidad', body: perfil.universidad || ''},
-      {title:'Carrera', body: perfil.carrera || ''},
-      {title:'Hobbies', body: perfil.hobbies || ''},
-      {title:'Residencia', body: perfil.residencia || ''},
-      {title:'Contacto', body: `Correo: ${perfil.correo || ''} <br> Tel: ${perfil.telefono || ''}` }
-    ];
+  const createSectionHeading = (title) => {
+    const heading = create('div', { className: 'section-heading' });
+    const titleEl = create('h3');
+    titleEl.textContent = title;
+    heading.appendChild(titleEl);
+    return heading;
+  };
 
-    cardData.forEach((c) => {
-      const art = document.createElement('article');
-      art.className = 'info-card fade-in';
-      art.innerHTML = `<h3>${c.title}</h3><p style="color:var(--muted);">${c.body}</p>`;
-      grid.appendChild(art);
+  const profileCard = create('article', { className: 'hero-card profile-card fade-in' });
+  const profileGrid = create('div', { className: 'profile-card-grid' });
+
+  const avatarWrapper = create('div', { className: 'profile-avatar' });
+  const avatarImg = create('img', { src: perfil.foto || 'assets/avatar/perfil.jpg', alt: `Foto de perfil de ${perfil.nombre || ''}`, loading: 'lazy', decoding: 'async' });
+  avatarWrapper.appendChild(avatarImg);
+
+  const profileInfo = create('div', { className: 'profile-card-info' });
+  const nameTitle = create('h2');
+  nameTitle.textContent = perfil.nombre || '';
+  const role = create('p');
+  role.className = 'headline';
+  role.textContent = `${perfil.carrera || ''} · ${perfil.universidad || ''}`;
+
+  const profileMeta = create('div', { className: 'profile-meta' });
+  const metaItems = [
+    { label: 'Edad', value: perfil.edad ? `${perfil.edad} años` : '' },
+    { label: 'Carrera', value: perfil.carrera },
+    { label: 'Universidad', value: perfil.universidad },
+    { label: 'Residencia', value: perfil.residencia }
+  ];
+  metaItems.forEach((item) => {
+    if (!item.value) return;
+    const card = create('div', { className: 'profile-meta-item' });
+    card.innerHTML = `<strong>${item.label}</strong><span>${item.value}</span>`;
+    profileMeta.appendChild(card);
+  });
+
+  const actions = create('div', { className: 'profile-actions' });
+  const cvButton = create('a', { className: 'btn', href: perfil.cv || '#', textContent: 'Descargar CV' });
+  cvButton.setAttribute('aria-label', 'Descargar CV');
+  if (perfil.cv) {
+    cvButton.target = '_blank';
+    cvButton.rel = 'noopener';
+  }
+  actions.appendChild(cvButton);
+
+  profileInfo.append(nameTitle, role, profileMeta, actions);
+  profileGrid.append(avatarWrapper, profileInfo);
+  profileCard.appendChild(profileGrid);
+  root.appendChild(profileCard);
+
+  const aboutCard = create('article', { className: 'hero-card info-card fade-in' });
+  const aboutTitle = create('h3');
+  aboutTitle.textContent = 'Acerca de mí';
+  const aboutText = create('p');
+  aboutText.textContent = perfil.descripcion || '';
+  aboutCard.append(aboutTitle, aboutText);
+  root.appendChild(aboutCard);
+
+  if (Array.isArray(perfil.educacion) && perfil.educacion.length) {
+    const educationSection = create('section', { className: 'info-section fade-in' });
+    educationSection.appendChild(createSectionHeading('Educación'));
+    const educationGrid = create('div', { className: 'education-grid' });
+    perfil.educacion.forEach((item) => {
+      const card = create('article', { className: 'hero-card edu-card' });
+      const icon = create('div', { className: 'edu-card-icon' });
+      icon.textContent = item.icono || '🎓';
+      const title = create('h4');
+      title.textContent = item.titulo || '';
+      const description = create('p');
+      description.textContent = item.descripcion || '';
+      card.append(icon, title, description);
+      educationGrid.appendChild(card);
     });
+    educationSection.appendChild(educationGrid);
+    root.appendChild(educationSection);
+  }
 
-    // Gallery
-    const gal = document.getElementById('personal-gallery');
-    if (gal && Array.isArray(galeriaPersonal)) {
-      gal.innerHTML = `<div class="section-heading"><h3>Galería</h3></div>`;
-      const wrap = document.createElement('div');
-      wrap.className = 'gallery';
-      gal.appendChild(wrap);
-      galeriaPersonal.forEach((name) => {
-        const fig = document.createElement('figure');
-        fig.className = 'hero-card';
-          const img = document.createElement('img');
-          img.src = `assets/img/galeria/${name}`;
-          img.alt = name || 'Galería';
-          img.loading = 'lazy';
-          img.decoding = 'async';
-          img.style = 'width:100%; height:120px; object-fit:cover; border-radius:12px; cursor:pointer;';
-          img.addEventListener('click', () => openLightbox(img.src));
-        const caption = document.createElement('figcaption');
-        caption.style.color = 'var(--muted)';
-        caption.textContent = name;
-        fig.appendChild(img);
-        fig.appendChild(caption);
-        wrap.appendChild(fig);
-      });
-    }
+  if (Array.isArray(perfil.hobbies) && perfil.hobbies.length) {
+    const hobbiesSection = create('section', { className: 'info-section fade-in' });
+    hobbiesSection.appendChild(createSectionHeading('Pasatiempos'));
+    const hobbiesGrid = create('div', { className: 'hobbies-grid' });
+    perfil.hobbies.forEach((item) => {
+      const card = create('article', { className: 'hero-card hobby-card' });
+      card.innerHTML = `<div class="hobby-icon">${item.icono || '⭐'}</div><h4>${item.nombre || ''}</h4>`;
+      hobbiesGrid.appendChild(card);
+    });
+    hobbiesSection.appendChild(hobbiesGrid);
+    root.appendChild(hobbiesSection);
+  }
+
+  if (Array.isArray(perfil.habilidades) && perfil.habilidades.length) {
+    const skillsSection = create('section', { className: 'info-section fade-in' });
+    skillsSection.appendChild(createSectionHeading('Habilidades'));
+    const skillsGrid = create('div', { className: 'skills-grid' });
+    perfil.habilidades.forEach((skill) => {
+      const chip = create('span', { className: 'skill-chip' });
+      chip.textContent = skill;
+      skillsGrid.appendChild(chip);
+    });
+    skillsSection.appendChild(skillsGrid);
+    root.appendChild(skillsSection);
+  }
+
+  if (Array.isArray(perfil.timeline) && perfil.timeline.length) {
+    const timelineSection = create('section', { className: 'info-section fade-in' });
+    timelineSection.appendChild(createSectionHeading('Línea de tiempo'));
+    const timelineList = create('div', { className: 'timeline-list' });
+    perfil.timeline.forEach((item, index) => {
+      const entry = create('div', { className: 'timeline-item' });
+      const marker = create('div', { className: 'timeline-marker' });
+      const circle = create('div', { className: 'timeline-circle' });
+      const content = create('div', { className: 'timeline-content' });
+      const year = create('span');
+      year.className = 'timeline-year';
+      year.textContent = item.year || '';
+      const title = create('h4');
+      title.textContent = item.title || '';
+      const desc = create('p');
+      desc.textContent = item.description || '';
+      content.append(year, title, desc);
+      entry.append(marker, content);
+      if (index < perfil.timeline.length - 1) {
+        const separator = create('div', { className: 'timeline-separator' });
+        entry.appendChild(separator);
+      }
+      timelineList.appendChild(entry);
+    });
+    timelineSection.appendChild(timelineList);
+    root.appendChild(timelineSection);
+  }
+
+  const contactSection = create('section', { className: 'info-section fade-in' });
+  contactSection.appendChild(createSectionHeading('Contacto'));
+  const contactGrid = create('div', { className: 'contact-grid' });
+
+  const contactInfoCard = create('article', { className: 'hero-card contact-card' });
+  const contactList = create('div', { className: 'contact-list' });
+  if (perfil.correo) {
+    const email = create('p');
+    email.innerHTML = `<strong>Correo</strong><br><a href="mailto:${perfil.correo}">${perfil.correo}</a>`;
+    contactList.appendChild(email);
+  }
+  if (perfil.github) {
+    const github = create('p');
+    github.innerHTML = `<strong>GitHub</strong><br><a href="https://github.com/${perfil.github}" target="_blank" rel="noopener">@${perfil.github}</a>`;
+    contactList.appendChild(github);
+  }
+  if (perfil.telefono) {
+    const phone = create('p');
+    phone.innerHTML = `<strong>Teléfono</strong><br><a href="tel:${perfil.telefono}">${perfil.telefono}</a>`;
+    contactList.appendChild(phone);
+  }
+  if (perfil.residencia || perfil.origen) {
+    const location = create('p');
+    location.innerHTML = `<strong>Ubicación</strong><br>${perfil.residencia || ''}${perfil.residencia && perfil.origen ? ' · ' : ''}${perfil.origen || ''}`;
+    contactList.appendChild(location);
+  }
+  contactInfoCard.appendChild(contactList);
+
+  const formCard = create('article', { className: 'hero-card contact-card' });
+  const contactForm = create('form', { id: 'contact-form', className: 'contact-form' });
+  contactForm.innerHTML = `
+    <label>
+      Nombre
+      <input type="text" name="name" placeholder="Tu nombre" required />
+    </label>
+    <label>
+      Correo
+      <input type="email" name="email" placeholder="Tu correo" required />
+    </label>
+    <label>
+      Mensaje
+      <textarea name="message" placeholder="Escribe tu mensaje aquí" required></textarea>
+    </label>
+    <button type="submit" class="btn">Enviar mensaje</button>
+  `;
+  formCard.appendChild(contactForm);
+  contactGrid.append(contactInfoCard, formCard);
+  contactSection.appendChild(contactGrid);
+  root.appendChild(contactSection);
+
+  if (contactForm) {
+    contactForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      alert('Formulario preparado para envío.');
+      contactForm.reset();
+    });
+  }
+
+  if (galleryRoot) {
+    galleryRoot.innerHTML = '';
+    const gallerySection = create('section');
+    gallerySection.appendChild(createSectionHeading('Galería personal'));
+    const galleryGrid = create('div', { className: 'gallery-grid' });
+    const galleryImages = Array.isArray(perfil.galeria) ? perfil.galeria : [];
+    galleryImages.forEach((imageName) => {
+      const figure = create('figure', { className: 'hero-card gallery-card' });
+      const img = create('img', { src: `assets/img/galeria/${imageName}`, alt: imageName || 'Galería', loading: 'lazy' });
+      img.addEventListener('click', () => openLightbox(img.src, galleryImages.map((name) => `assets/img/galeria/${name}`)));
+      const caption = create('figcaption');
+      caption.textContent = imageName;
+      figure.append(img, caption);
+      galleryGrid.appendChild(figure);
+    });
+    gallerySection.appendChild(galleryGrid);
+    galleryRoot.appendChild(gallerySection);
   }
 }
 
