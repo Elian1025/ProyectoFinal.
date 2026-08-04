@@ -1,4 +1,4 @@
-// Configuración inicial y tema guardado
+// Configuración inicial y utilidades
 const STORAGE_KEY = 'portfolio-theme-config';
 
 const defaultConfig = {
@@ -10,8 +10,18 @@ const defaultConfig = {
   animatedRGB: false
 };
 
-let config = loadConfig();
+// ----- Small helper utilities -----
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+const create = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+const on = (el, ev, fn, opts) => (el && el.addEventListener(ev, fn, opts));
+const debounce = (fn, wait = 100) => {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
+};
 
+// Load/save config with safe parsing
+let config = loadConfig();
 function loadConfig() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -23,7 +33,7 @@ function loadConfig() {
 }
 
 function saveConfig() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch (e) { console.warn(e); }
 }
 
 function applyTheme() {
@@ -48,38 +58,36 @@ function applyBackgroundPreset(preset) {
 }
 
 function initThemeControls() {
-  const panel = document.getElementById('theme-panel');
-  const toggle = document.getElementById('theme-toggle');
-  const bgInput = document.getElementById('background-color');
-  const buttonInput = document.getElementById('button-color');
-  const textInput = document.getElementById('text-color');
-  const themeSelect = document.getElementById('theme-select');
-  const saveBtn = document.getElementById('save-theme');
-
+  const panel = $('#theme-panel');
+  const toggle = $('#theme-toggle');
+  const bgInput = $('#background-color');
+  const buttonInput = $('#button-color');
+  const textInput = $('#text-color');
+  const themeSelect = $('#theme-select');
+  const saveBtn = $('#save-theme');
   if (!panel || !toggle) return;
 
-  toggle.addEventListener('click', () => panel.classList.toggle('open'));
+  // Toggle panel open
+  on(toggle, 'click', () => panel.classList.toggle('open'));
 
-  bgInput.value = config.background;
-  buttonInput.value = config.buttonColor;
-  textInput.value = config.textColor;
-  themeSelect.value = config.theme;
+  // Initialize inputs with current config
+  if (bgInput) bgInput.value = config.background;
+  if (buttonInput) buttonInput.value = config.buttonColor;
+  if (textInput) textInput.value = config.textColor;
+  if (themeSelect) themeSelect.value = config.theme;
 
-  [bgInput, buttonInput, textInput, themeSelect].forEach((element) => {
-    element.addEventListener('input', () => {
-      config.background = bgInput.value;
-      config.buttonColor = buttonInput.value;
-      config.textColor = textInput.value;
-      config.theme = themeSelect.value;
-      applyTheme();
-    });
-  });
+  // Debounced live updates from inputs
+  const updateFromInputs = debounce(() => {
+    if (bgInput) config.background = bgInput.value;
+    if (buttonInput) config.buttonColor = buttonInput.value;
+    if (textInput) config.textColor = textInput.value;
+    if (themeSelect) config.theme = themeSelect.value;
+    applyTheme();
+  }, 60);
 
-  saveBtn.addEventListener('click', () => {
-    saveConfig();
-    panel.classList.remove('open');
-    alert('Configuración guardada correctamente.');
-  });
+  [bgInput, buttonInput, textInput, themeSelect].forEach((el) => { if (el) on(el, 'input', updateFromInputs); });
+
+  if (saveBtn) on(saveBtn, 'click', () => { saveConfig(); panel.classList.remove('open'); alert('Configuración guardada correctamente.'); });
 }
 
 function initPresetPanel() {
@@ -118,38 +126,18 @@ function initPresetPanel() {
   `;
 
   document.body.appendChild(panel);
-
   const toggle = panel.querySelector('#preset-toggle');
   const body = panel.querySelector('.preset-body');
-  toggle.addEventListener('click', () => body.classList.toggle('open'));
+  if (toggle && body) on(toggle, 'click', () => { body.classList.toggle('open'); toggle.setAttribute('aria-expanded', String(body.classList.contains('open'))); });
 
-  // theme presets
-  panel.querySelectorAll('.preset-theme').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const t = btn.getAttribute('data-theme');
-      applyPresetTheme(t);
-    });
-  });
-
-  // backgrounds
-  panel.querySelectorAll('.preset-bg').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const bg = btn.getAttribute('data-bg');
-      config.backgroundPreset = bg;
-      applyBackgroundPreset(bg);
-    });
-  });
-
-  panel.querySelector('#preset-save').addEventListener('click', () => {
-    saveConfig();
-    alert('Preferencias guardadas.');
-  });
-
-  panel.querySelector('#preset-reset').addEventListener('click', () => {
-    config = { ...defaultConfig };
-    applyTheme();
-    saveConfig();
-    alert('Configuración restablecida.');
+  // Delegate clicks inside panel to keep fewer listeners
+  on(panel, 'click', (ev) => {
+    const t = ev.target.closest('button[data-theme]');
+    if (t) { applyPresetTheme(t.getAttribute('data-theme')); return; }
+    const b = ev.target.closest('button[data-bg]');
+    if (b) { config.backgroundPreset = b.getAttribute('data-bg'); applyBackgroundPreset(config.backgroundPreset); return; }
+    if (ev.target.id === 'preset-save') { saveConfig(); alert('Preferencias guardadas.'); return; }
+    if (ev.target.id === 'preset-reset') { config = { ...defaultConfig }; applyTheme(); saveConfig(); alert('Configuración restablecida.'); return; }
   });
 }
 
@@ -193,7 +181,7 @@ function applyPresetTheme(name) {
     case 'rgb':
       config.background = '#07060b';
       config.buttonColor = '#00e5ff';
-      config.textColor = '#ffffff';
+      config.textColor = '#fff3f3';
       config.theme = 'dark';
       config.animatedRGB = true;
       break;
@@ -228,12 +216,12 @@ function initReveal() {
     });
   }, { threshold: 0.15 });
 
-  document.querySelectorAll('.reveal').forEach((item) => observer.observe(item));
+  $$('.reveal').forEach((item) => observer.observe(item));
 }
 
 function initUnits() {
-  document.querySelectorAll('.unit-toggle').forEach((button) => {
-    button.addEventListener('click', () => {
+  $$('.unit-toggle').forEach((button) => {
+    on(button, 'click', () => {
       const target = button.getAttribute('data-target');
       const detail = document.getElementById(target);
       if (!detail) return;
@@ -271,7 +259,8 @@ function initParticles() {
 
   const ctx = canvas.getContext('2d');
   const particles = [];
-  const particleCount = 70;
+  // Particle count scales with viewport for better performance on small devices
+  const particleCount = Math.min(110, Math.max(20, Math.round(window.innerWidth / 12)));
 
   const resize = () => {
     canvas.width = window.innerWidth * window.devicePixelRatio;
@@ -332,10 +321,7 @@ function initParticles() {
     requestAnimationFrame(draw);
   };
 
-  window.addEventListener('resize', () => {
-    resize();
-    createParticles();
-  });
+  window.addEventListener('resize', debounce(() => { resize(); createParticles(); }, 120));
 
   resize();
   createParticles();
@@ -343,48 +329,37 @@ function initParticles() {
 }
 
 function initCustomCursor() {
-  // Create cursor element
+  // Create cursor element (only one)
   if (document.getElementById('custom-cursor')) return;
-  const cursor = document.createElement('div');
-  cursor.id = 'custom-cursor';
+  const cursor = create('div', { id: 'custom-cursor', role: 'presentation', 'aria-hidden': 'true' });
   document.body.appendChild(cursor);
 
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let posX = mouseX;
-  let posY = mouseY;
+  let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2, posX = mouseX, posY = mouseY;
+  const update = () => { posX += (mouseX - posX) * 0.18; posY += (mouseY - posY) * 0.18; cursor.style.left = posX + 'px'; cursor.style.top = posY + 'px'; requestAnimationFrame(update); };
 
-  const update = () => {
-    posX += (mouseX - posX) * 0.18;
-    posY += (mouseY - posY) * 0.18;
-    cursor.style.left = posX + 'px';
-    cursor.style.top = posY + 'px';
-    requestAnimationFrame(update);
-  };
+  on(document, 'pointermove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
 
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+  // Event delegation for hover states (avoids attaching many listeners)
+  on(document, 'pointerover', (e) => {
+    const interactive = e.target.closest('a, button, .btn, .start-btn, .unit-card, [role="button"]');
+    if (interactive) cursor.classList.add('hover');
   });
-
-  // Hover interactions
-  document.querySelectorAll('a, button, .btn, .start-btn, .unit-card').forEach((el) => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+  on(document, 'pointerout', (e) => {
+    const interactive = e.target.closest('a, button, .btn, .start-btn, .unit-card, [role="button"]');
+    if (interactive) cursor.classList.remove('hover');
   });
 
   update();
 }
 
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener('click', (event) => {
-      event.preventDefault();
-      const target = document.querySelector(anchor.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
+  // Delegate smooth scrolling for in-page anchors
+  on(document, 'click', (event) => {
+    const anchor = event.target.closest('a[href^="#"]');
+    if (!anchor) return;
+    event.preventDefault();
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 
@@ -393,25 +368,19 @@ function initPageTransitions() {
   document.body.classList.add('page-enter');
   setTimeout(() => document.body.classList.remove('page-enter'), 650);
 
-  // Interceptar enlaces de navegación interna para animar salida
-  document.querySelectorAll('a').forEach((link) => {
+  // Interceptar enlaces de navegación interna para animar salida (delegado)
+  on(document, 'click', (ev) => {
+    const link = ev.target.closest('a');
+    if (!link) return;
     const href = link.getAttribute('href');
     if (!href) return;
     if (href.startsWith('#')) return;
     if (href.startsWith('mailto:') || link.target === '_blank') return;
-    try {
-      const url = new URL(href, location.href);
-      if (url.origin !== location.origin) return;
-    } catch (e) {
-      return;
-    }
-
-    link.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      const dest = link.href;
-      document.body.classList.add('page-exit');
-      setTimeout(() => (window.location.href = dest), 360);
-    });
+    try { const url = new URL(href, location.href); if (url.origin !== location.origin) return; } catch (e) { return; }
+    ev.preventDefault();
+    const dest = link.href;
+    document.body.classList.add('page-exit');
+    setTimeout(() => (window.location.href = dest), 360);
   });
 }
 
@@ -507,11 +476,13 @@ function renderInformacion() {
       galeriaPersonal.forEach((name) => {
         const fig = document.createElement('figure');
         fig.className = 'hero-card';
-        const img = document.createElement('img');
-        img.src = `assets/img/galeria/${name}`;
-        img.alt = name;
-        img.style = 'width:100%; height:120px; object-fit:cover; border-radius:12px; cursor:pointer;';
-        img.addEventListener('click', () => openLightbox(img.src));
+          const img = document.createElement('img');
+          img.src = `assets/img/galeria/${name}`;
+          img.alt = name || 'Galería';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.style = 'width:100%; height:120px; object-fit:cover; border-radius:12px; cursor:pointer;';
+          img.addEventListener('click', () => openLightbox(img.src));
         const caption = document.createElement('figcaption');
         caption.style.color = 'var(--muted)';
         caption.textContent = name;
@@ -535,13 +506,21 @@ function renderAprendizaje() {
   units.forEach((u, idx) => {
     const art = document.createElement('article');
     art.className = 'unit-card large glow-card slide-up';
-    art.innerHTML = `
-      <div class="card-media"><img src="assets/img/unidad${idx+1}/${u.galeria && u.galeria[0] ? u.galeria[0] : 'placeholder.jpg'}" alt="${u.titulo}" /></div>
-      <div class="card-body">
-        <h3>${u.titulo}</h3>
-        <p class="muted">${u.descripcion || ''}</p>
-        <div class="actions"><a class="btn" href="unidad${idx+1}.html">Entrar</a></div>
-      </div>`;
+    const cardMedia = create('div', { className: 'card-media' });
+    const thumb = create('img');
+    thumb.src = `assets/img/unidad${idx+1}/${u.galeria && u.galeria[0] ? u.galeria[0] : 'placeholder.jpg'}`;
+    thumb.alt = u.titulo || `Unidad ${idx+1}`;
+    thumb.loading = 'lazy';
+    cardMedia.appendChild(thumb);
+    const cardBody = create('div', { className: 'card-body' });
+    cardBody.innerHTML = `<h3>${u.titulo}</h3><p class="muted">${u.descripcion || ''}</p>`;
+    const actions = create('div', { className: 'actions' });
+    const link = create('a', { className: 'btn', href: `unidad${idx+1}.html` });
+    link.textContent = 'Entrar';
+    actions.appendChild(link);
+    cardBody.appendChild(actions);
+    art.appendChild(cardMedia);
+    art.appendChild(cardBody);
     grid.appendChild(art);
   });
 }
@@ -564,9 +543,13 @@ function renderUnitPage(unitData) {
     gwrap.style.display = 'grid';
     gwrap.style.gridTemplateColumns = 'repeat(auto-fit, minmax(140px,1fr))';
     gwrap.style.gap = '0.6rem';
+    const unitNumMatch = (unitData.titulo && unitData.titulo.match(/\d+/)) ? unitData.titulo.match(/\d+/)[0] : '1';
     unitData.galeria.forEach((imgName) => {
       const img = document.createElement('img');
-      img.src = `assets/img/unidad${unitData.titulo.match(/\d+/) ? unitData.titulo.match(/\d+/)[0] : '1'}/${imgName}`;
+      img.src = `assets/img/unidad${unitNumMatch}/${imgName}`;
+      img.alt = imgName || `${unitData.titulo} imagen`;
+      img.loading = 'lazy';
+      img.decoding = 'async';
       img.style = 'width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer;';
       img.addEventListener('click', () => openLightbox(img.src));
       gwrap.appendChild(img);
@@ -581,10 +564,15 @@ function createLightbox() {
   const lb = document.createElement('div');
   lb.id = 'lightbox';
   lb.style = 'position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.85); z-index:99999;';
+  lb.setAttribute('role', 'dialog');
+  lb.setAttribute('aria-modal', 'true');
   const img = document.createElement('img');
   img.style = 'max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.8);';
   lb.appendChild(img);
-  lb.addEventListener('click', () => { lb.style.display = 'none'; });
+  const close = () => { lb.style.display = 'none'; document.removeEventListener('keydown', keyHandler); };
+  lb.addEventListener('click', close);
+  const keyHandler = (ev) => { if (ev.key === 'Escape') close(); };
+  document.addEventListener('keydown', keyHandler);
   document.body.appendChild(lb);
 }
 
