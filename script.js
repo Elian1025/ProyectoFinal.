@@ -159,15 +159,39 @@ function initParticles() {
 
   const draw = () => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    // Draw connective lines
+    for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
+      for (let j = i + 1; j < particles.length; j++) {
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = 'rgba(0,229,255,' + (0.12 * (1 - dist / 120)).toFixed(2) + ')';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
       if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
       if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
+
+      // Glow effect
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = p.color;
       ctx.fillStyle = p.color;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     });
     requestAnimationFrame(draw);
   };
@@ -180,6 +204,40 @@ function initParticles() {
   resize();
   createParticles();
   draw();
+}
+
+function initCustomCursor() {
+  // Create cursor element
+  if (document.getElementById('custom-cursor')) return;
+  const cursor = document.createElement('div');
+  cursor.id = 'custom-cursor';
+  document.body.appendChild(cursor);
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let posX = mouseX;
+  let posY = mouseY;
+
+  const update = () => {
+    posX += (mouseX - posX) * 0.18;
+    posY += (mouseY - posY) * 0.18;
+    cursor.style.left = posX + 'px';
+    cursor.style.top = posY + 'px';
+    requestAnimationFrame(update);
+  };
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  // Hover interactions
+  document.querySelectorAll('a, button, .btn, .start-btn, .unit-card').forEach((el) => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+  });
+
+  update();
 }
 
 function initSmoothScroll() {
@@ -232,6 +290,23 @@ function init() {
   initParticles();
   initSmoothScroll();
   initPageTransitions();
+  initCustomCursor();
+  initCyberOverlay();
+}
+
+function initCyberOverlay() {
+  if (document.querySelector('.cyber-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'cyber-overlay';
+  document.body.appendChild(overlay);
+
+  // small glow bar at bottom of page shell
+  const shell = document.querySelector('.page-shell');
+  if (shell && !shell.querySelector('.glow-bar')) {
+    const bar = document.createElement('div');
+    bar.className = 'glow-bar';
+    shell.appendChild(bar);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

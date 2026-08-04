@@ -683,3 +683,138 @@ body.page-exit .page-shell {
     align-items: flex-start;
   }
 }
+
+/* ========================
+   Visual Enhancements
+   ======================== */
+
+/* Glassmorphism base for panels */
+.hero-card,
+.contact-card,
+.info-card,
+.unit-card,
+.theme-panel,
+.section {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 30px rgba(12, 16, 32, 0.55), 0 2px 8px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+/* Glow accents */
+.brand,
+.eyebrow,
+.unit-card h3,
+.info-card h3 {
+  text-shadow: 0 4px 28px rgba(139,92,246,0.22), 0 2px 12px rgba(0,229,255,0.12);
+}
+
+/* Luminous borders */
+.main-header {
+  border: 1px solid rgba(0,229,255,0.08);
+  box-shadow: 0 20px 60px rgba(0, 229, 255, 0.06), 0 8px 30px rgba(139,92,246,0.03);
+}
+
+/* Futuristic background lines */
+body::before {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0,229,255,0.03), transparent 10%),
+    repeating-linear-gradient(90deg, rgba(139,92,246,0.02), rgba(139,92,246,0.02) 2px, transparent 3px, transparent 40px);
+  background-size: 36px 36px, 36px 36px, cover, 100% 100%;
+}
+
+/* Modern shadows and depth for cards */
+.unit-card {
+  transition: transform 0.45s cubic-bezier(.2,.9,.2,1), box-shadow 0.35s ease;
+  transform-origin: center;
+}
+
+.unit-card:hover {
+  transform: translateY(-10px) rotateX(4deg) scale(1.02);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 6px 24px rgba(0,229,255,0.06);
+}
+
+/* Hover 3D for buttons */
+.btn,
+.start-btn,
+.theme-toggle {
+  transform-style: preserve-3d;
+}
+
+.btn:hover,
+.start-btn:hover,
+.theme-toggle:hover {
+  transform: translateZ(6px) translateY(-4px);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 999px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,229,255,0.22), rgba(139,92,246,0.18));
+  border-radius: 999px;
+  border: 3px solid rgba(0,0,0,0.03);
+}
+
+/* Custom cursor */
+:root { --cursor-size: 18px; }
+body { cursor: none; }
+#custom-cursor {
+  position: fixed;
+  width: var(--cursor-size);
+  height: var(--cursor-size);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  mix-blend-mode: screen;
+  transition: width 0.18s ease, height 0.18s ease, background 0.18s ease, transform 0.12s linear;
+  box-shadow: 0 0 18px rgba(0,229,255,0.28), 0 0 36px rgba(139,92,246,0.12);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(255,255,255,0.15)), linear-gradient(90deg, rgba(0,229,255,0.16), rgba(139,92,246,0.12));
+}
+
+#custom-cursor.hover {
+  width: 44px; height: 44px; transform: translate(-50%, -50%) scale(1.02);
+  box-shadow: 0 0 28px rgba(0,229,255,0.45), 0 0 56px rgba(139,92,246,0.22);
+}
+
+/* Utility animations */
+.fade-in { animation: fadeIn 0.6s ease both; }
+.slide-up { animation: slideUp 0.6s cubic-bezier(.2,.9,.2,1) both; }
+.zoom-in { animation: zoomIn 0.5s cubic-bezier(.2,.9,.2,1) both; }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
+@keyframes zoomIn { from { opacity:0; transform: scale(0.96); } to { opacity:1; transform: scale(1); } }
+
+/* RGB elegant accent animation */
+.rgb-accent { background: linear-gradient(90deg, rgba(0,229,255,0.2), rgba(139,92,246,0.18)); }
+.glow-bar {
+  position: absolute; inset: auto 0 0 0; height: 6px; border-radius: 6px; z-index: 2;
+  background: linear-gradient(90deg, rgba(0,229,255,0.95), rgba(139,92,246,0.9));
+  box-shadow: 0 6px 30px rgba(0,229,255,0.08), 0 0 80px rgba(139,92,246,0.04);
+}
+
+/* Cyberpunk overlay */
+.cyber-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: radial-gradient(ellipse at 10% 20%, rgba(255,0,128,0.03), transparent 8%), radial-gradient(ellipse at 90% 80%, rgba(0,229,255,0.03), transparent 12%);
+  mix-blend-mode: screen; opacity: 0.9;
+}
+
+/* Thin futuristic lines */
+.page-shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px), linear-gradient(180deg, rgba(139,92,246,0.02) 1px, transparent 1px);
+  background-size: 200px 200px, 200px 200px;
+  pointer-events: none;
+}
+
+/* Ensure responsiveness remains */
+@media (max-width: 900px) {
+  :root { --cursor-size: 14px; }
+  .unit-grid { grid-template-columns: 1fr; }
+}
