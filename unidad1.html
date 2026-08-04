@@ -17,19 +17,31 @@
           <a href="index.html#inicio">Inicio</a>
           <a href="informacion.html">Información</a>
           <a href="aprendizaje.html">Aprendizaje</a>
-          <a href="index.html#contacto">Contacto</a>
         </nav>
         <button class="theme-toggle" id="theme-toggle" type="button">Personalizar</button>
       </header>
 
       <main>
-        <section class="section reveal">
+        <section class="section reveal" aria-labelledby="unidad1-title">
           <div class="section-heading">
-            <h2>Unidad 1</h2>
+            <h2 id="unidad1-title">Unidad 1</h2>
           </div>
+
           <div class="hero-card">
-            <h3>Contenido de la Unidad 1</h3>
-            <p style="color:var(--muted);">Aquí puedes añadir la lección, recursos y ejercicios para la Unidad 1.</p>
+            <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+              <div style="flex:1; min-width:220px;">
+                <input id="topic-search" type="search" placeholder="Buscar temas..." aria-label="Buscar temas" style="width:100%; padding:0.6rem 0.8rem; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,0.02); color:var(--text);" />
+              </div>
+              <div style="display:flex; gap:0.6rem;">
+                <a class="btn" href="index.html#inicio">Inicio</a>
+                <a class="btn" href="informacion.html">Información</a>
+                <a class="btn secondary" href="aprendizaje.html">Aprendizaje</a>
+              </div>
+            </div>
+
+            <div id="topics-area" style="margin-top:1rem; min-height:260px;">
+              <!-- Área vacía donde se generarán los temas mediante JavaScript -->
+            </div>
           </div>
         </section>
       </main>
