@@ -20,6 +20,20 @@ const debounce = (fn, wait = 100) => {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
 };
 
+function shuffleArray(array) {
+  const cloned = Array.isArray(array) ? [...array] : [];
+  for (let i = cloned.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+  }
+  return cloned;
+}
+
+function pickRandomItems(items, count) {
+  const pool = shuffleArray(items || []);
+  return pool.slice(0, Math.max(0, Math.min(count, pool.length)));
+}
+
 // Load/save config with safe parsing
 let config = loadConfig();
 function loadConfig() {
@@ -631,6 +645,408 @@ function renderUnitPage(unitData) {
   galleryWrap.style.marginTop = '0.8rem';
   main.appendChild(galleryWrap);
 
+  const exercisePanel = create('section', { className: 'exercise-panel fade-in' });
+  exercisePanel.style.marginTop = '1rem';
+  exercisePanel.innerHTML = `
+    <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:0.75rem; margin-bottom:1rem;">
+      <div>
+        <h3 style="margin:0 0 0.4rem;">Ejercicios</h3>
+        <p class="muted" style="margin:0;">Selecciona la cantidad de ejercicios que quieres resolver para este tema.</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <label for="exercise-count-select" style="font-size:0.95rem; color:var(--muted);">Cantidad</label>
+        <select id="exercise-count-select" style="padding:0.5rem 0.75rem; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,0.04); color:inherit; min-width:150px;">
+          <option value="0">Sin ejercicios</option>
+          <option value="5">5 ejercicios</option>
+          <option value="10">10 ejercicios</option>
+        </select>
+      </div>
+    </div>
+  `;
+  const exerciseContainer = create('div', { className: 'exercise-list' });
+  exerciseContainer.style.display = 'grid';
+  exerciseContainer.style.gap = '1rem';
+  exercisePanel.appendChild(exerciseContainer);
+  main.appendChild(exercisePanel);
+
+  const exerciseSelect = exercisePanel.querySelector('#exercise-count-select');
+
+  const evaluationPanel = create('section', { className: 'evaluation-panel fade-in' });
+  evaluationPanel.style.marginTop = '1rem';
+  evaluationPanel.innerHTML = `
+    <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:0.75rem; margin-bottom:1rem;">
+      <div>
+        <h3 style="margin:0 0 0.4rem;">Evaluación automática</h3>
+        <p class="muted" style="margin:0;">Genera un examen aleatorio para este tema y recibe resultados inmediatos.</p>
+      </div>
+      <button id="generate-exam-btn" class="btn" type="button">Evaluar conocimientos</button>
+    </div>
+    <p id="exam-status-text" class="muted" style="margin:0 0 1rem;">Presiona el botón para generar un examen aleatorio.</p>
+  `;
+  const examContainer = create('div', { className: 'exam-container' });
+  examContainer.style.display = 'grid';
+  examContainer.style.gap = '1rem';
+  const examResultContainer = create('div', { className: 'exam-result' });
+  examResultContainer.style.marginTop = '1rem';
+  evaluationPanel.appendChild(examContainer);
+  evaluationPanel.appendChild(examResultContainer);
+  main.appendChild(evaluationPanel);
+
+  const examStatusText = evaluationPanel.querySelector('#exam-status-text');
+  let examQuestions = [];
+  let examStartTime = null;
+
+  function normalizeValue(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function compareSelectionAnswer(expected = [], actual = []) {
+    const expectedNormalized = expected.map(normalizeValue).sort();
+    const actualNormalized = actual.map(normalizeValue).sort();
+    return expectedNormalized.length === actualNormalized.length && expectedNormalized.every((value, idx) => value === actualNormalized[idx]);
+  }
+
+  function getExamAnswer(card, question) {
+    if (!card || !question) return null;
+    const type = (question.tipoPregunta || '').toLowerCase();
+    if (type === 'opción múltiple' || type === 'opcion multiple' || type === 'verdadero/falso' || type === 'verdadero falso') {
+      const selected = card.querySelector('input[type="radio"]:checked');
+      return selected ? selected.value : null;
+    }
+    if (type === 'selección múltiple' || type === 'seleccion multiple') {
+      return Array.from(card.querySelectorAll('input[type="checkbox"]:checked')).map((input) => input.value);
+    }
+    if (type === 'completar') {
+      const text = card.querySelector('textarea');
+      return text ? text.value : '';
+    }
+    return null;
+  }
+
+  function buildExamQuestionCard(question, index) {
+    const card = create('article', { className: 'evaluation-card hero-card fade-in' });
+    card.dataset.questionIndex = String(index - 1);
+    card.style.padding = '1rem';
+    card.style.borderRadius = '18px';
+    card.style.border = '1px solid rgba(255,255,255,0.08)';
+    card.style.background = 'rgba(255,255,255,0.04)';
+    card.style.display = 'grid';
+    card.style.gap = '0.85rem';
+
+    const header = create('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.flexWrap = 'wrap';
+    const title = create('h4');
+    title.textContent = `Pregunta ${index} - ${question.nivel || 'Fácil'}`;
+    title.style.margin = '0';
+    title.style.fontSize = '1rem';
+    const badge = create('span');
+    badge.textContent = question.tipo || '';
+    badge.style.color = 'var(--accent)';
+    badge.style.fontSize = '0.85rem';
+    badge.style.fontWeight = '700';
+    header.appendChild(title);
+    header.appendChild(badge);
+
+    const prompt = create('p');
+    prompt.textContent = question.pregunta || '';
+    prompt.style.margin = '0';
+    prompt.style.whiteSpace = 'pre-wrap';
+
+    const answerArea = create('div');
+    answerArea.style.display = 'grid';
+    answerArea.style.gap = '0.8rem';
+
+    const type = (question.tipoPregunta || '').toLowerCase();
+    if (type === 'opción múltiple' || type === 'opcion multiple') {
+      const options = question.opciones || [];
+      options.forEach((option) => {
+        const label = create('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '0.7rem';
+        label.style.padding = '0.75rem 0.9rem';
+        label.style.borderRadius = '12px';
+        label.style.border = '1px solid rgba(255,255,255,0.08)';
+        label.style.background = 'rgba(255,255,255,0.02)';
+        const input = create('input');
+        input.type = 'radio';
+        input.name = `exam-question-${index}`;
+        input.value = option;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(option));
+        answerArea.appendChild(label);
+      });
+    } else if (type === 'verdadero/falso' || type === 'verdadero falso') {
+      ['Verdadero', 'Falso'].forEach((option) => {
+        const label = create('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '0.7rem';
+        label.style.padding = '0.75rem 0.9rem';
+        label.style.borderRadius = '12px';
+        label.style.border = '1px solid rgba(255,255,255,0.08)';
+        label.style.background = 'rgba(255,255,255,0.02)';
+        const input = create('input');
+        input.type = 'radio';
+        input.name = `exam-question-${index}`;
+        input.value = option.toLowerCase();
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(option));
+        answerArea.appendChild(label);
+      });
+    } else if (type === 'selección múltiple' || type === 'seleccion multiple') {
+      const options = question.opciones || [];
+      options.forEach((option) => {
+        const label = create('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '0.7rem';
+        label.style.padding = '0.75rem 0.9rem';
+        label.style.borderRadius = '12px';
+        label.style.border = '1px solid rgba(255,255,255,0.08)';
+        label.style.background = 'rgba(255,255,255,0.02)';
+        const input = create('input');
+        input.type = 'checkbox';
+        input.name = `exam-question-${index}`;
+        input.value = option;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(option));
+        answerArea.appendChild(label);
+      });
+    } else {
+      const textarea = create('textarea');
+      textarea.rows = 4;
+      textarea.placeholder = 'Escribe tu respuesta...';
+      textarea.style.width = '100%';
+      textarea.style.resize = 'vertical';
+      textarea.style.padding = '0.85rem';
+      textarea.style.borderRadius = '12px';
+      textarea.style.border = '1px solid rgba(255,255,255,0.12)';
+      textarea.style.background = 'rgba(255,255,255,0.04)';
+      textarea.style.color = 'inherit';
+      answerArea.appendChild(textarea);
+    }
+
+    card.appendChild(header);
+    card.appendChild(prompt);
+    card.appendChild(answerArea);
+
+    return card;
+  }
+
+  function renderExam(topic) {
+    examContainer.innerHTML = '';
+    examResultContainer.innerHTML = '';
+    if (!topic || !Array.isArray(topic.evaluaciones) || topic.evaluaciones.length === 0) {
+      const noExam = create('p');
+      noExam.className = 'muted';
+      noExam.textContent = 'No hay preguntas de evaluación disponibles para este tema.';
+      examContainer.appendChild(noExam);
+      return;
+    }
+
+    const amount = Math.min(5, topic.evaluaciones.length);
+    examQuestions = pickRandomItems(topic.evaluaciones, amount);
+    examStartTime = Date.now();
+    examStatusText.textContent = `Examen iniciado: ${amount} preguntas aleatorias. Tiempo en curso...`;
+
+    examQuestions.forEach((question, idx) => {
+      examContainer.appendChild(buildExamQuestionCard(question, idx + 1));
+    });
+
+    const submitExamBtn = create('button', { type: 'button', className: 'btn secondary' });
+    submitExamBtn.textContent = 'Terminar examen';
+    submitExamBtn.style.alignSelf = 'start';
+    on(submitExamBtn, 'click', () => gradeExam());
+    examContainer.appendChild(submitExamBtn);
+  }
+
+  function gradeExam() {
+    if (!examQuestions.length || !examStartTime) return;
+    let correctCount = 0;
+    let incorrectCount = 0;
+
+    examQuestions.forEach((question, idx) => {
+      const card = examContainer.querySelector(`[data-question-index="${idx}"]`);
+      const answer = getExamAnswer(card, question);
+      let isCorrect = false;
+      const type = (question.tipoPregunta || '').toLowerCase();
+      if (type === 'selección múltiple' || type === 'seleccion multiple') {
+        isCorrect = compareSelectionAnswer(Array.isArray(question.respuesta) ? question.respuesta : [question.respuesta], Array.isArray(answer) ? answer : []);
+      } else {
+        isCorrect = normalizeValue(answer) === normalizeValue(question.respuesta);
+      }
+
+      if (isCorrect) {
+        correctCount += 1;
+        card.style.borderColor = 'rgba(0,255,136,0.55)';
+        card.style.boxShadow = '0 16px 40px rgba(0,255,136,0.12)';
+      } else {
+        incorrectCount += 1;
+        card.style.borderColor = 'rgba(255,80,80,0.55)';
+        card.style.boxShadow = '0 16px 40px rgba(255,80,80,0.12)';
+      }
+    });
+
+    const total = examQuestions.length;
+    const percentage = total ? Math.round((correctCount / total) * 100) : 0;
+    const elapsedMs = Date.now() - examStartTime;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+    const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+    const title = percentage >= 80 ? '🏆 Todo un Ingeniero' : percentage >= 60 ? '📚 Estudiante en 3er Semestre' : '😄 Estudiante en Nivelación';
+    const descriptionText = percentage >= 80 ? 'Excelente desempeño en la evaluación.' : percentage >= 60 ? 'Buen avance, sigue practicando para mejorar.' : 'Puedes reforzar los conceptos clave y volver a intentarlo.';
+
+    examResultContainer.innerHTML = `
+      <article class="result-card glow-card fade-in">
+        <div class="result-header">
+          <h3>${title}</h3>
+          <p class="muted" style="margin:0.4rem 0 0;">${descriptionText}</p>
+        </div>
+        <div class="result-grid">
+          <div class="result-item"><span class="result-value">${correctCount}</span><span>Correctas</span></div>
+          <div class="result-item"><span class="result-value">${incorrectCount}</span><span>Incorrectas</span></div>
+          <div class="result-item"><span class="result-value">${percentage}%</span><span>Porcentaje</span></div>
+          <div class="result-item"><span class="result-value">${minutes}:${seconds}</span><span>Tiempo empleado</span></div>
+        </div>
+      </article>
+    `;
+    examStatusText.textContent = 'Examen finalizado. Revisa tu resultado y los comentarios.';
+  }
+
+  const generateExamBtn = evaluationPanel.querySelector('#generate-exam-btn');
+  if (generateExamBtn) {
+    on(generateExamBtn, 'click', () => {
+      if (currentTopicId) renderExam(topicIndex[currentTopicId]);
+    });
+  }
+
+  function buildExerciseCard(question, index) {
+    const card = create('article', { className: 'exercise-card hero-card fade-in' });
+    card.style.padding = '1rem';
+    card.style.border = '1px solid rgba(255,255,255,0.08)';
+    card.style.background = 'rgba(255,255,255,0.04)';
+    card.style.borderRadius = '16px';
+    card.style.display = 'grid';
+    card.style.gap = '0.75rem';
+
+    const header = create('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.flexWrap = 'wrap';
+    const title = create('h4');
+    title.textContent = `Ejercicio ${index} - ${question.nivel || 'Fácil'}`;
+    title.style.margin = '0';
+    title.style.fontSize = '1rem';
+    const badge = create('span');
+    badge.textContent = question.tipo || 'Conceptual';
+    badge.style.color = 'var(--accent)';
+    badge.style.fontSize = '0.85rem';
+    badge.style.fontWeight = '700';
+    header.appendChild(title);
+    header.appendChild(badge);
+
+    const prompt = create('p');
+    prompt.textContent = question.pregunta || '';
+    prompt.style.margin = '0';
+    prompt.style.whiteSpace = 'pre-wrap';
+
+    const responseArea = create('textarea', {
+      rows: 4,
+      placeholder: 'Escribe tu respuesta aquí...',
+      spellcheck: false
+    });
+    responseArea.style.width = '100%';
+    responseArea.style.minHeight = '100px';
+    responseArea.style.resize = 'vertical';
+    responseArea.style.padding = '0.85rem';
+    responseArea.style.borderRadius = '12px';
+    responseArea.style.border = '1px solid rgba(255,255,255,0.12)';
+    responseArea.style.background = 'rgba(255,255,255,0.04)';
+    responseArea.style.color = 'inherit';
+
+    const actions = create('div');
+    actions.style.display = 'flex';
+    actions.style.flexWrap = 'wrap';
+    actions.style.gap = '0.5rem';
+
+    const showBtn = create('button', { type: 'button', className: 'btn' });
+    showBtn.textContent = 'Mostrar respuesta';
+    showBtn.style.flex = '1';
+    const hideBtn = create('button', { type: 'button', className: 'btn secondary' });
+    hideBtn.textContent = 'Ocultar respuesta';
+    hideBtn.style.flex = '1';
+
+    const answerPanel = create('div');
+    answerPanel.style.display = 'none';
+    answerPanel.style.padding = '0.9rem 1rem';
+    answerPanel.style.borderRadius = '12px';
+    answerPanel.style.background = 'rgba(255,255,255,0.06)';
+    answerPanel.style.color = 'var(--text)';
+
+    const answerLabel = create('strong');
+    answerLabel.textContent = 'Respuesta correcta:';
+    const answerText = create('p');
+    answerText.textContent = question.respuesta || '';
+    answerText.style.margin = '0.4rem 0 0';
+    const explanation = create('p');
+    explanation.textContent = question.explicacion || '';
+    explanation.style.margin = '0.8rem 0 0';
+    explanation.style.color = 'var(--muted)';
+
+    answerPanel.appendChild(answerLabel);
+    answerPanel.appendChild(answerText);
+    if (question.explicacion) answerPanel.appendChild(explanation);
+
+    on(showBtn, 'click', () => { answerPanel.style.display = 'block'; });
+    on(hideBtn, 'click', () => { answerPanel.style.display = 'none'; });
+
+    actions.appendChild(showBtn);
+    actions.appendChild(hideBtn);
+    card.appendChild(header);
+    card.appendChild(prompt);
+    card.appendChild(responseArea);
+    card.appendChild(actions);
+    card.appendChild(answerPanel);
+    return card;
+  }
+
+  function renderExercises(topic, count = Number(exerciseSelect.value || 0)) {
+    exerciseContainer.innerHTML = '';
+    if (!topic || !Array.isArray(topic.preguntas) || topic.preguntas.length === 0) {
+      const noExercises = create('p');
+      noExercises.className = 'muted';
+      noExercises.textContent = 'Este tema no tiene ejercicios disponibles aún.';
+      exerciseContainer.appendChild(noExercises);
+      return;
+    }
+
+    const amount = Math.min(Math.max(0, Number(count)), topic.preguntas.length);
+    if (amount === 0) {
+      const prompt = create('p');
+      prompt.className = 'muted';
+      prompt.textContent = 'Selecciona una cantidad para generar ejercicios aleatorios sin repetir.';
+      exerciseContainer.appendChild(prompt);
+      return;
+    }
+
+    const selected = pickRandomItems(topic.preguntas, amount);
+    selected.forEach((question, idx) => {
+      exerciseContainer.appendChild(buildExerciseCard(question, idx + 1));
+    });
+  }
+
+  if (exerciseSelect) {
+    on(exerciseSelect, 'change', () => {
+      if (currentTopicId) {
+        renderExercises(topicIndex[currentTopicId], Number(exerciseSelect.value));
+      }
+    });
+  }
+
   layout.appendChild(sidebar);
   layout.appendChild(main);
   topicsArea.appendChild(layout);
@@ -640,16 +1056,40 @@ function renderUnitPage(unitData) {
   let currentTopicId = null;
 
   // Render a topic into the main area
+  function buildTopicTabs(topic) {
+    const fields = [
+      ['Introducción', topic.introduccion],
+      ['Concepto', topic.concepto],
+      ['Definición', topic.definicion],
+      ['Explicación', topic.explicacion],
+      ['Características', topic.caracteristicas],
+      ['Ventajas', topic.ventajas],
+      ['Desventajas', topic.desventajas],
+      ['Aplicaciones', topic.aplicaciones],
+      ['Ejemplos', topic.ejemplos]
+    ];
+    return Object.fromEntries(fields.filter(([_, value]) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return typeof value === 'string' && value.trim().length > 0;
+    }));
+  }
+
   function renderTopic(t) {
     titleEl.textContent = t.titulo || '';
-    descEl.textContent = t.descripcion || '';
-    mediaImg.src = t.img ? `assets/img/unidad1/${t.img}` : '';
+    descEl.textContent = t.descripcion || t.introduccion || '';
+    const imageSource = t.img
+      ? `assets/img/unidad1/${t.img}`
+      : (t.galeria && t.galeria[0]
+        ? `assets/img/unidad1/${t.galeria[0]}`
+        : (t.imagenes && t.imagenes[0] ? `assets/img/unidad1/${t.imagenes[0]}` : ''));
+    mediaImg.src = imageSource;
     mediaImg.alt = t.titulo || 'Imagen del tema';
 
     // Tabs
     tabsBar.innerHTML = '';
     tabContent.innerHTML = '';
-    const tabKeys = Object.keys(t.tabs || {});
+    const topicTabs = t.tabs || buildTopicTabs(t);
+    const tabKeys = Object.keys(topicTabs);
     tabKeys.forEach((key, i) => {
       const tb = create('button', { className: 'tab-btn', type: 'button' });
       tb.textContent = key;
@@ -660,12 +1100,11 @@ function renderUnitPage(unitData) {
       on(tb, 'click', () => {
         tabsBar.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         tb.classList.add('active');
-        renderTabContent(key, t.tabs[key]);
+        renderTabContent(key, topicTabs[key]);
       });
       tabsBar.appendChild(tb);
     });
-    // Render first tab
-    if (tabKeys.length) renderTabContent(tabKeys[0], t.tabs[tabKeys[0]]);
+    if (tabKeys.length) renderTabContent(tabKeys[0], topicTabs[tabKeys[0]]);
 
     // Accordions
     accordionArea.innerHTML = '';
@@ -694,7 +1133,7 @@ function renderUnitPage(unitData) {
     gal.style.display = 'grid';
     gal.style.gridTemplateColumns = 'repeat(auto-fit, minmax(120px,1fr))';
     gal.style.gap = '0.5rem';
-    ((t.galeria && t.galeria.length) ? t.galeria : []).forEach((imgName) => {
+    ((t.galeria && t.galeria.length) ? t.galeria : (t.imagenes || [])).forEach((imgName) => {
       const im = create('img');
       im.src = `assets/img/unidad1/${imgName}`;
       im.alt = imgName || 'imagen';
@@ -738,6 +1177,7 @@ function renderUnitPage(unitData) {
       if (last) last.textContent = `${unitData.titulo} › ${t.titulo}`;
     }
     renderTopic(t);
+    renderExercises(t, Number(exerciseSelect ? exerciseSelect.value : 0));
     // set hash without reloading
     try { history.replaceState(null, '', `#topic-${t.id}`); } catch (e) {}
   }
