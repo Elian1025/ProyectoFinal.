@@ -342,30 +342,6 @@ function initParticles() {
   draw();
 }
 
-function initCustomCursor() {
-  // Create cursor element (only one)
-  if (document.getElementById('custom-cursor')) return;
-  const cursor = create('div', { id: 'custom-cursor', role: 'presentation', 'aria-hidden': 'true' });
-  document.body.appendChild(cursor);
-
-  let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2, posX = mouseX, posY = mouseY;
-  const update = () => { posX += (mouseX - posX) * 0.18; posY += (mouseY - posY) * 0.18; cursor.style.left = posX + 'px'; cursor.style.top = posY + 'px'; requestAnimationFrame(update); };
-
-  on(document, 'pointermove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-
-  // Event delegation for hover states (avoids attaching many listeners)
-  on(document, 'pointerover', (e) => {
-    const interactive = e.target.closest('a, button, .btn, .start-btn, .unit-card, [role="button"]');
-    if (interactive) cursor.classList.add('hover');
-  });
-  on(document, 'pointerout', (e) => {
-    const interactive = e.target.closest('a, button, .btn, .start-btn, .unit-card, [role="button"]');
-    if (interactive) cursor.classList.remove('hover');
-  });
-
-  update();
-}
-
 function initSmoothScroll() {
   // Delegate smooth scrolling for in-page anchors
   on(document, 'click', (event) => {
@@ -409,7 +385,6 @@ function init() {
   initParticles();
   initSmoothScroll();
   initPageTransitions();
-  initCustomCursor();
   initCyberOverlay();
   initPresetPanel();
 }
@@ -462,7 +437,8 @@ function renderInformacion() {
   const profileGrid = create('div', { className: 'profile-card-grid' });
 
   const avatarWrapper = create('div', { className: 'profile-avatar' });
-  const avatarImg = create('img', { src: perfil.foto || 'assets/avatar/perfil.jpg', alt: `Foto de perfil de ${perfil.nombre || ''}`, loading: 'lazy', decoding: 'async' });
+  const avatarImg = create('img', { src: perfil.foto || 'assets/img/placeholder.jpg', alt: `Foto de perfil de ${perfil.nombre || ''}`, loading: 'lazy', decoding: 'async' });
+  avatarImg.onerror = () => { avatarImg.src = 'assets/img/placeholder.jpg'; };
   avatarWrapper.appendChild(avatarImg);
 
   const profileInfo = create('div', { className: 'profile-card-info' });
@@ -487,13 +463,13 @@ function renderInformacion() {
   });
 
   const actions = create('div', { className: 'profile-actions' });
-  const cvButton = create('a', { className: 'btn', href: perfil.cv || '#', textContent: 'Descargar CV' });
-  cvButton.setAttribute('aria-label', 'Descargar CV');
   if (perfil.cv) {
+    const cvButton = create('a', { className: 'btn', href: perfil.cv, textContent: 'Descargar CV' });
+    cvButton.setAttribute('aria-label', 'Descargar CV');
     cvButton.target = '_blank';
     cvButton.rel = 'noopener';
+    actions.appendChild(cvButton);
   }
-  actions.appendChild(cvButton);
 
   profileInfo.append(nameTitle, role, profileMeta, actions);
   profileGrid.append(avatarWrapper, profileInfo);
@@ -648,6 +624,7 @@ function renderInformacion() {
     galleryImages.forEach((imageName) => {
       const figure = create('figure', { className: 'hero-card gallery-card' });
       const img = create('img', { src: `assets/img/galeria/${imageName}`, alt: imageName || 'Galería', loading: 'lazy' });
+      img.onerror = () => { img.src = 'assets/img/placeholder.jpg'; };
       img.addEventListener('click', () => openLightbox(img.src, galleryImages.map((name) => `assets/img/galeria/${name}`)));
       const caption = create('figcaption');
       caption.textContent = imageName;
@@ -674,6 +651,7 @@ function renderAprendizaje() {
     const cardMedia = create('div', { className: 'card-media' });
     const thumb = create('img');
     thumb.src = `assets/img/unidad${idx+1}/${u.galeria && u.galeria[0] ? u.galeria[0] : 'placeholder.jpg'}`;
+    thumb.onerror = () => { thumb.src = 'assets/img/placeholder.jpg'; };
     thumb.alt = u.titulo || `Unidad ${idx+1}`;
     thumb.loading = 'lazy';
     cardMedia.appendChild(thumb);
@@ -795,7 +773,7 @@ function renderUnitPage(unitData) {
   unitGallerySection.style.marginTop = '1rem';
   unitGallerySection.innerHTML = `
     <div class="section-heading">
-      <h3>Galería de Unidad 1</h3>
+      <h3>Galería de ${unitData.titulo}</h3>
       <p class="muted" style="margin:0.4rem 0 0;">Haz clic en una imagen para verla con más detalle.</p>
     </div>
   `;
@@ -1256,6 +1234,7 @@ function renderUnitPage(unitData) {
         : (t.imagenes && t.imagenes[0] ? resolveUnitImage(t.imagenes[0]) : ''));
     mediaImg.src = imageSource;
     mediaImg.alt = t.titulo || 'Imagen del tema';
+    mediaImg.onerror = () => { mediaImg.src = 'assets/img/placeholder.jpg'; };
 
     // Tabs
     tabsBar.innerHTML = '';
@@ -1310,6 +1289,7 @@ function renderUnitPage(unitData) {
       topicImages.forEach((src) => {
         const im = create('img');
         im.src = src;
+        im.onerror = () => { im.src = 'assets/img/placeholder.jpg'; };
         im.alt = src.split('/').pop();
         im.loading = 'lazy';
         im.style = 'width:100%; height:90px; object-fit:cover; border-radius:12px; cursor:pointer; transition: transform 0.25s ease, box-shadow 0.25s ease;';
@@ -1342,6 +1322,7 @@ function renderUnitPage(unitData) {
     unitImages.forEach((src) => {
       const thumb = create('img');
       thumb.src = src;
+      thumb.onerror = () => { thumb.src = 'assets/img/placeholder.jpg'; };
       thumb.alt = src.split('/').pop();
       thumb.loading = 'lazy';
       thumb.style = 'width:100%; aspect-ratio:1.1; object-fit:cover; border-radius:16px; cursor:pointer; transition: transform 0.25s ease, box-shadow 0.25s ease;';

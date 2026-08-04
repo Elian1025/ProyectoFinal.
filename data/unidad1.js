@@ -44,8 +44,8 @@ const temasUnidad1 = [
       'Un simulador de computadoras que permite alternar entre el modelo Von Neumann y Harvard para comparar el rendimiento.'
     ],
     imagenes: [
-      'assets/img/unidad1/vonneumann.png',
-      'assets/img/unidad1/harvard.png'
+      'assets/img/unidad1/u1_img1.jpg',
+      'assets/img/unidad1/u1_img1.jpg'
     ],
     preguntas: [
       {
@@ -203,8 +203,8 @@ const temasUnidad1 = [
       'Un teléfono inteligente con Android coordinando llamadas, mensajes y aplicaciones en segundo plano.'
     ],
     imagenes: [
-      'assets/img/unidad1/so_nucleo.png',
-      'assets/img/unidad1/so_planificacion.png'
+      'assets/img/unidad1/u1_img1.jpg',
+      'assets/img/unidad1/u1_img1.jpg'
     ],
     preguntas: [
       {
@@ -339,8 +339,8 @@ const temasUnidad1 = [
       'Los códigos RGB en diseño web se expresan en hexadecimal, como #FF00CC.'
     ],
     imagenes: [
-      'assets/img/unidad1/sistema_binario.png',
-      'assets/img/unidad1/sistema_hexadecimal.png'
+      'assets/img/unidad1/u1_img1.jpg',
+      'assets/img/unidad1/u1_img1.jpg'
     ],
     preguntas: [
       {
@@ -496,8 +496,8 @@ const temasUnidad1 = [
       'Multiplicación binaria en hardware con desplazamientos y acumuladores.'
     ],
     imagenes: [
-      'assets/img/unidad1/aritmetica_suma.png',
-      'assets/img/unidad1/aritmetica_complemento.png'
+      'assets/img/unidad1/u1_img1.jpg',
+      'assets/img/unidad1/u1_img1.jpg'
     ],
     preguntas: [
       {
@@ -653,8 +653,8 @@ const temasUnidad1 = [
       'Uso de tablas de verdad para comprobar el valor lógico de una función con diferentes entradas.'
     ],
     imagenes: [
-      'assets/img/unidad1/boole_and_or_not.png',
-      'assets/img/unidad1/boole_tabla_verdad.png'
+      'assets/img/unidad1/u1_img1.jpg',
+      'assets/img/unidad1/u1_img1.jpg'
     ],
     preguntas: [
       {
