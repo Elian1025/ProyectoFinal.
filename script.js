@@ -447,3 +447,167 @@ function initCyberOverlay() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* -------------------------
+   Renderizado dinámico desde data/
+   ------------------------- */
+function renderIndex() {
+  try {
+    if (typeof perfil !== 'undefined') {
+      const title = document.getElementById('site-title');
+      if (title) title.textContent = perfil.universidad || perfil.nombre || title.textContent;
+    }
+  } catch (e) { /* ignore if data not loaded */ }
+}
+
+function renderInformacion() {
+  const grid = document.getElementById('profile-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (typeof perfil !== 'undefined') {
+    const fields = [
+      {k:'descripcion', t:'Presentación'},
+      {k:'objetivos', t:'Objetivos'},
+      {k:'perfil', t:'Perfil Profesional'},
+      {k:'educacion', t:'Educación'},
+      {k:'universidad', t:'Universidad'},
+      {k:'carrera', t:'Carrera'},
+      {k:'hobbies', t:'Hobbies'},
+      {k:'residencia', t:'Residencia'},
+      {k:'contacto', t:'Contacto'}
+    ];
+
+    // Map perfil fields to cards (use available perfil properties)
+    const cardData = [
+      {title:'Presentación', body: perfil.descripcion || ''},
+      {title:'Objetivos', body: perfil.objetivos || ''},
+      {title:'Perfil Profesional', body: perfil.perfil || ''},
+      {title:'Educación', body: perfil.educacion || ''},
+      {title:'Universidad', body: perfil.universidad || ''},
+      {title:'Carrera', body: perfil.carrera || ''},
+      {title:'Hobbies', body: perfil.hobbies || ''},
+      {title:'Residencia', body: perfil.residencia || ''},
+      {title:'Contacto', body: `Correo: ${perfil.correo || ''} <br> Tel: ${perfil.telefono || ''}` }
+    ];
+
+    cardData.forEach((c) => {
+      const art = document.createElement('article');
+      art.className = 'info-card fade-in';
+      art.innerHTML = `<h3>${c.title}</h3><p style="color:var(--muted);">${c.body}</p>`;
+      grid.appendChild(art);
+    });
+
+    // Gallery
+    const gal = document.getElementById('personal-gallery');
+    if (gal && Array.isArray(galeriaPersonal)) {
+      gal.innerHTML = `<div class="section-heading"><h3>Galería</h3></div>`;
+      const wrap = document.createElement('div');
+      wrap.className = 'gallery';
+      gal.appendChild(wrap);
+      galeriaPersonal.forEach((name) => {
+        const fig = document.createElement('figure');
+        fig.className = 'hero-card';
+        const img = document.createElement('img');
+        img.src = `assets/img/galeria/${name}`;
+        img.alt = name;
+        img.style = 'width:100%; height:120px; object-fit:cover; border-radius:12px; cursor:pointer;';
+        img.addEventListener('click', () => openLightbox(img.src));
+        const caption = document.createElement('figcaption');
+        caption.style.color = 'var(--muted)';
+        caption.textContent = name;
+        fig.appendChild(img);
+        fig.appendChild(caption);
+        wrap.appendChild(fig);
+      });
+    }
+  }
+}
+
+function renderAprendizaje() {
+  const grid = document.getElementById('units-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const units = [];
+  if (typeof unidad1 !== 'undefined') units.push(unidad1);
+  if (typeof unidad2 !== 'undefined') units.push(unidad2);
+  if (typeof unidad3 !== 'undefined') units.push(unidad3);
+
+  units.forEach((u, idx) => {
+    const art = document.createElement('article');
+    art.className = 'unit-card large glow-card slide-up';
+    art.innerHTML = `
+      <div class="card-media"><img src="assets/img/unidad${idx+1}/${u.galeria && u.galeria[0] ? u.galeria[0] : 'placeholder.jpg'}" alt="${u.titulo}" /></div>
+      <div class="card-body">
+        <h3>${u.titulo}</h3>
+        <p class="muted">${u.descripcion || ''}</p>
+        <div class="actions"><a class="btn" href="unidad${idx+1}.html">Entrar</a></div>
+      </div>`;
+    grid.appendChild(art);
+  });
+}
+
+function renderUnitPage(unitData) {
+  if (!unitData) return;
+  const title = document.getElementById(unitData.titulo ? unitData.titulo.toLowerCase().replace(/\s/g,'') + '-title' : null);
+  // Instead, set section heading if present
+  const h = document.querySelector('.section-heading h2');
+  if (h) h.textContent = unitData.titulo || h.textContent;
+  const desc = document.querySelector('.hero-card p');
+  if (desc && unitData.descripcion) desc.textContent = unitData.descripcion;
+  // Render gallery preview
+  const topicsArea = document.getElementById('topics-area');
+  if (!topicsArea) return;
+  topicsArea.innerHTML = '';
+  // show gallery thumbnails if available
+  if (Array.isArray(unitData.galeria) && unitData.galeria.length) {
+    const gwrap = document.createElement('div');
+    gwrap.style.display = 'grid';
+    gwrap.style.gridTemplateColumns = 'repeat(auto-fit, minmax(140px,1fr))';
+    gwrap.style.gap = '0.6rem';
+    unitData.galeria.forEach((imgName) => {
+      const img = document.createElement('img');
+      img.src = `assets/img/unidad${unitData.titulo.match(/\d+/) ? unitData.titulo.match(/\d+/)[0] : '1'}/${imgName}`;
+      img.style = 'width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer;';
+      img.addEventListener('click', () => openLightbox(img.src));
+      gwrap.appendChild(img);
+    });
+    topicsArea.appendChild(gwrap);
+  }
+}
+
+/* Lightbox simple */
+function createLightbox() {
+  if (document.getElementById('lightbox')) return;
+  const lb = document.createElement('div');
+  lb.id = 'lightbox';
+  lb.style = 'position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.85); z-index:99999;';
+  const img = document.createElement('img');
+  img.style = 'max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.8);';
+  lb.appendChild(img);
+  lb.addEventListener('click', () => { lb.style.display = 'none'; });
+  document.body.appendChild(lb);
+}
+
+function openLightbox(src) {
+  createLightbox();
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  const img = lb.querySelector('img');
+  img.src = src;
+  lb.style.display = 'flex';
+}
+
+/* Ejecutar renderizados según la página */
+function runDynamicRenderers() {
+  try { renderIndex(); } catch (e) {}
+  try { renderInformacion(); } catch (e) {}
+  try { renderAprendizaje(); } catch (e) {}
+  // unit pages
+  try {
+    if (typeof unidad1 !== 'undefined' && location.pathname.endsWith('unidad1.html')) renderUnitPage(unidad1);
+    if (typeof unidad2 !== 'undefined' && location.pathname.endsWith('unidad2.html')) renderUnitPage(unidad2);
+    if (typeof unidad3 !== 'undefined' && location.pathname.endsWith('unidad3.html')) renderUnitPage(unidad3);
+  } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(runDynamicRenderers, 80));

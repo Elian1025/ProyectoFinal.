@@ -44,16 +44,21 @@
           </select>
         </label>
         <button id="save-theme" type="button">Guardar diseño</button>
-      </div>
-
       <main>
         <section class="section reveal" id="informacion">
           <div class="section-heading">
-            <h2>Información personal</h2>
+            <h2 id="info-title">Información personal</h2>
           </div>
-          <div class="info-grid active">
-            <article class="info-card fade-in">
-              <h3>Presentación</h3>
+
+          <div id="profile-grid" class="info-grid active">
+            <!-- El contenido se cargará desde data/personal.js mediante script.js -->
+          </div>
+
+          <div id="personal-gallery" style="margin-top:1.2rem;">
+            <!-- Galería dinámica -->
+          </div>
+        </section>
+      </main>
               <p>Me considero un estudiante comprometido, curioso y enfocado en construir soluciones tecnológicas útiles, limpias y eficientes.</p>
             </article>
 
@@ -134,6 +139,7 @@
       </svg>
     </a>
 
+    <script src="data/personal.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

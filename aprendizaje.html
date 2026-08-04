@@ -51,45 +51,8 @@
           <div class="section-heading">
             <h2>Aprendizaje</h2>
           </div>
-          <div class="unit-grid active unit-cards">
-            <article class="unit-card large glow-card slide-up">
-              <div class="card-media">
-                <img src="assets/img/unit1.jpg" alt="Unidad 1" />
-              </div>
-              <div class="card-body">
-                <h3>Unidad 1</h3>
-                <p class="muted">Introducción y conceptos básicos. Estructura preparada para contenido futuro.</p>
-                <div class="actions">
-                  <a class="btn" href="unidad1.html">Entrar</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="unit-card large glow-card slide-up">
-              <div class="card-media">
-                <img src="assets/img/unit2.jpg" alt="Unidad 2" />
-              </div>
-              <div class="card-body">
-                <h3>Unidad 2</h3>
-                <p class="muted">Temas intermedios y prácticas guiadas. Contenedor listo para añadir recursos.</p>
-                <div class="actions">
-                  <a class="btn" href="unidad2.html">Entrar</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="unit-card large glow-card slide-up">
-              <div class="card-media">
-                <img src="assets/img/unit3.jpg" alt="Unidad 3" />
-              </div>
-              <div class="card-body">
-                <h3>Unidad 3</h3>
-                <p class="muted">Temas avanzados y proyecto final. Espacio reservado para contenido posterior.</p>
-                <div class="actions">
-                  <a class="btn" href="unidad3.html">Entrar</a>
-                </div>
-              </div>
-            </article>
+          <div id="units-grid" class="unit-grid active">
+            <!-- Las tarjetas de unidades se generarán desde data/unidad1.js, unidad2.js y unidad3.js -->
           </div>
         </section>
       </main>
@@ -101,6 +64,9 @@
       </svg>
     </a>
 
+    <script src="data/unidad1.js"></script>
+    <script src="data/unidad2.js"></script>
+    <script src="data/unidad3.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
