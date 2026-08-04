@@ -527,35 +527,250 @@ function renderAprendizaje() {
 
 function renderUnitPage(unitData) {
   if (!unitData) return;
-  const title = document.getElementById(unitData.titulo ? unitData.titulo.toLowerCase().replace(/\s/g,'') + '-title' : null);
-  // Instead, set section heading if present
-  const h = document.querySelector('.section-heading h2');
-  if (h) h.textContent = unitData.titulo || h.textContent;
-  const desc = document.querySelector('.hero-card p');
-  if (desc && unitData.descripcion) desc.textContent = unitData.descripcion;
-  // Render gallery preview
+  // Header / section title
+  const heading = document.querySelector('.section-heading');
+  if (heading) {
+    const h = heading.querySelector('h2');
+    if (h) h.textContent = unitData.titulo || h.textContent;
+    // breadcrumb
+    let bc = heading.querySelector('.breadcrumb');
+    if (!bc) {
+      bc = document.createElement('nav');
+      bc.className = 'breadcrumb';
+      bc.setAttribute('aria-label', 'Breadcrumb');
+      heading.appendChild(bc);
+    }
+    bc.innerHTML = `<a href="index.html#inicio">Inicio</a> <span aria-hidden="true">›</span> <a href="aprendizaje.html">Aprendizaje</a> <span aria-hidden="true">›</span> <span>${unitData.titulo}</span>`;
+  }
+
   const topicsArea = document.getElementById('topics-area');
   if (!topicsArea) return;
   topicsArea.innerHTML = '';
-  // show gallery thumbnails if available
-  if (Array.isArray(unitData.galeria) && unitData.galeria.length) {
-    const gwrap = document.createElement('div');
-    gwrap.style.display = 'grid';
-    gwrap.style.gridTemplateColumns = 'repeat(auto-fit, minmax(140px,1fr))';
-    gwrap.style.gap = '0.6rem';
-    const unitNumMatch = (unitData.titulo && unitData.titulo.match(/\d+/)) ? unitData.titulo.match(/\d+/)[0] : '1';
-    unitData.galeria.forEach((imgName) => {
-      const img = document.createElement('img');
-      img.src = `assets/img/unidad${unitNumMatch}/${imgName}`;
-      img.alt = imgName || `${unitData.titulo} imagen`;
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.style = 'width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer;';
-      img.addEventListener('click', () => openLightbox(img.src));
-      gwrap.appendChild(img);
+
+  // Layout: sidebar + main
+  const layout = create('div', { className: 'unit-layout' });
+  layout.style.display = 'grid';
+  layout.style.gridTemplateColumns = '280px 1fr';
+  layout.style.gap = '1rem';
+
+  // Sidebar
+  const sidebar = create('aside', { className: 'unit-sidebar hero-card reveal', id: 'unit-sidebar' });
+  sidebar.style.padding = '0.8rem';
+  const list = create('ul', { className: 'topic-list' });
+  list.style.listStyle = 'none';
+  list.style.display = 'grid';
+  list.style.gap = '0.4rem';
+
+  // Build topic items
+  (unitData.temas || []).forEach((t, idx) => {
+    const li = create('li');
+    const btn = create('button', { className: 'topic-item', type: 'button' });
+    btn.dataset.id = t.id;
+    btn.textContent = t.titulo;
+    btn.style.width = '100%';
+    btn.style.textAlign = 'left';
+    btn.style.padding = '0.6rem 0.8rem';
+    btn.style.borderRadius = '10px';
+    btn.style.border = '1px solid transparent';
+    btn.style.background = 'transparent';
+    on(btn, 'click', () => selectTopic(t.id));
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+
+  sidebar.appendChild(list);
+
+  // Main content
+  const main = create('div', { className: 'unit-main hero-card reveal' });
+  main.style.padding = '1rem';
+
+  // Title area
+  const titleEl = create('h3', {});
+  titleEl.className = 'fade-in';
+  main.appendChild(titleEl);
+
+  // Description
+  const descEl = create('p');
+  descEl.className = 'muted';
+  main.appendChild(descEl);
+
+  // Media (image)
+  const mediaWrap = create('div', { className: 'media-wrap' });
+  mediaWrap.style.margin = '0.8rem 0';
+  const mediaImg = create('img');
+  mediaImg.style = 'width:100%; max-height:320px; object-fit:cover; border-radius:12px;';
+  mediaImg.loading = 'lazy';
+  mediaWrap.appendChild(mediaImg);
+  main.appendChild(mediaWrap);
+
+  // Tabs
+  const tabsBar = create('div', { className: 'tabs-bar' });
+  tabsBar.style.display = 'flex';
+  tabsBar.style.gap = '0.4rem';
+  tabsBar.style.flexWrap = 'wrap';
+  tabsBar.style.marginTop = '0.6rem';
+  const tabContent = create('div', { className: 'tab-content' });
+  tabContent.style.marginTop = '0.8rem';
+  main.appendChild(tabsBar);
+  main.appendChild(tabContent);
+
+  // Accordions and cards area
+  const accordionArea = create('div', { className: 'accordion-area' });
+  accordionArea.style.marginTop = '0.8rem';
+  main.appendChild(accordionArea);
+
+  const cardsArea = create('div', { className: 'cards-area' });
+  cardsArea.style.display = 'grid';
+  cardsArea.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px,1fr))';
+  cardsArea.style.gap = '0.6rem';
+  cardsArea.style.marginTop = '0.8rem';
+  main.appendChild(cardsArea);
+
+  // Gallery preview
+  const galleryWrap = create('div', { className: 'gallery-wrap' });
+  galleryWrap.style.marginTop = '0.8rem';
+  main.appendChild(galleryWrap);
+
+  layout.appendChild(sidebar);
+  layout.appendChild(main);
+  topicsArea.appendChild(layout);
+
+  // Utilities
+  const topicIndex = (unitData.temas || []).reduce((acc, t) => { acc[String(t.id)] = t; return acc; }, {});
+  let currentTopicId = null;
+
+  // Render a topic into the main area
+  function renderTopic(t) {
+    titleEl.textContent = t.titulo || '';
+    descEl.textContent = t.descripcion || '';
+    mediaImg.src = t.img ? `assets/img/unidad1/${t.img}` : '';
+    mediaImg.alt = t.titulo || 'Imagen del tema';
+
+    // Tabs
+    tabsBar.innerHTML = '';
+    tabContent.innerHTML = '';
+    const tabKeys = Object.keys(t.tabs || {});
+    tabKeys.forEach((key, i) => {
+      const tb = create('button', { className: 'tab-btn', type: 'button' });
+      tb.textContent = key;
+      tb.style.padding = '0.45rem 0.7rem';
+      tb.style.borderRadius = '8px';
+      tb.style.border = '1px solid transparent';
+      if (i === 0) tb.classList.add('active');
+      on(tb, 'click', () => {
+        tabsBar.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        tb.classList.add('active');
+        renderTabContent(key, t.tabs[key]);
+      });
+      tabsBar.appendChild(tb);
     });
-    topicsArea.appendChild(gwrap);
+    // Render first tab
+    if (tabKeys.length) renderTabContent(tabKeys[0], t.tabs[tabKeys[0]]);
+
+    // Accordions
+    accordionArea.innerHTML = '';
+    (t.acordiones || []).forEach((accItem, idx) => {
+      const acc = create('details');
+      const sum = create('summary');
+      sum.textContent = accItem.title || `Detalle ${idx+1}`;
+      const body = create('div');
+      body.innerHTML = accItem.content || '';
+      acc.appendChild(sum);
+      acc.appendChild(body);
+      accordionArea.appendChild(acc);
+    });
+
+    // Cards
+    cardsArea.innerHTML = '';
+    (t.tarjetas || []).forEach((card) => {
+      const c = create('article', { className: 'info-card fade-in' });
+      c.innerHTML = `<h4>${card.title || ''}</h4><p class="muted">${card.body || ''}</p>`;
+      cardsArea.appendChild(c);
+    });
+
+    // Gallery
+    galleryWrap.innerHTML = '';
+    const gal = create('div');
+    gal.style.display = 'grid';
+    gal.style.gridTemplateColumns = 'repeat(auto-fit, minmax(120px,1fr))';
+    gal.style.gap = '0.5rem';
+    ((t.galeria && t.galeria.length) ? t.galeria : []).forEach((imgName) => {
+      const im = create('img');
+      im.src = `assets/img/unidad1/${imgName}`;
+      im.alt = imgName || 'imagen';
+      im.loading = 'lazy';
+      im.style = 'width:100%; height:90px; object-fit:cover; border-radius:8px; cursor:pointer;';
+      on(im, 'click', () => openLightbox(im.src));
+      gal.appendChild(im);
+    });
+    galleryWrap.appendChild(gal);
+
+    // small reveal animation
+    main.classList.add('visible');
   }
+
+  function renderTabContent(key, content) {
+    tabContent.innerHTML = '';
+    const wrap = create('div');
+    wrap.className = 'tab-panel fade-in';
+    if (Array.isArray(content)) {
+      // list content
+      const ul = create('ul');
+      content.forEach(i => { const li = create('li'); li.innerHTML = i || ''; ul.appendChild(li); });
+      wrap.appendChild(ul);
+    } else {
+      wrap.innerHTML = content || '';
+    }
+    tabContent.appendChild(wrap);
+  }
+
+  // Select topic by id
+  function selectTopic(id) {
+    const t = topicIndex[String(id)];
+    if (!t) return;
+    currentTopicId = String(id);
+    // highlight in sidebar
+    $$('.topic-item', list).forEach(btn => btn.classList.toggle('active', btn.dataset.id === String(id)));
+    // update breadcrumb last item
+    const bc = document.querySelector('.breadcrumb');
+    if (bc) {
+      const last = bc.querySelector('span:last-child');
+      if (last) last.textContent = `${unitData.titulo} › ${t.titulo}`;
+    }
+    renderTopic(t);
+    // set hash without reloading
+    try { history.replaceState(null, '', `#topic-${t.id}`); } catch (e) {}
+  }
+
+  // Search/filter topics
+  const search = document.getElementById('topic-search');
+  if (search) {
+    on(search, 'input', debounce(() => {
+      const q = (search.value || '').toLowerCase().trim();
+      const items = $$('.topic-item', list);
+      let firstVisible = null;
+      items.forEach((btn) => {
+        const txt = (btn.textContent || '').toLowerCase();
+        const visible = txt.includes(q);
+        btn.parentElement.style.display = visible ? '' : 'none';
+        if (visible && !firstVisible) firstVisible = btn;
+      });
+      if (firstVisible) selectTopic(firstVisible.dataset.id);
+    }, 120));
+  }
+
+  // Initialize selection: hash -> match or first topic
+  const hash = (location.hash || '').replace('#topic-', '');
+  if (hash && topicIndex[String(hash)]) selectTopic(hash);
+  else if (unitData.temas && unitData.temas.length) selectTopic(unitData.temas[0].id);
+
+  // Responsive: collapse sidebar under 900px
+  const adapt = () => {
+    if (window.innerWidth < 900) { layout.style.gridTemplateColumns = '1fr'; sidebar.style.order = -1; }
+    else { layout.style.gridTemplateColumns = '280px 1fr'; sidebar.style.order = 0; }
+  };
+  on(window, 'resize', debounce(adapt, 160));
+  adapt();
 }
 
 /* Lightbox simple */
