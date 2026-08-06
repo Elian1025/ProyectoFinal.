@@ -206,7 +206,7 @@ function applyPresetTheme(name) {
 }
 
 function initWelcome() {
-  // La pantalla de bienvenida ya no se usa; la vista principal se muestra directamente.
+document.body.classList.add('welcome-done');
 }
 
 function initReveal() {
