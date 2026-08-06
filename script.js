@@ -104,107 +104,6 @@ function initThemeControls() {
   if (saveBtn) on(saveBtn, 'click', () => { saveConfig(); panel.classList.remove('open'); alert('Configuración guardada correctamente.'); });
 }
 
-function initPresetPanel() {
-  if (document.getElementById('preset-panel')) return;
-  const panel = document.createElement('div');
-  panel.id = 'preset-panel';
-  panel.className = 'preset-panel';
-
-  panel.innerHTML = `
-    <button id="preset-toggle" class="preset-toggle" aria-label="Abrir configuración">⚙</button>
-    <div class="preset-body">
-      <h3>Temas</h3>
-      <div class="preset-themes">
-        <button data-theme="azul" class="preset-theme">Azul Gamer</button>
-        <button data-theme="morado" class="preset-theme">Morado Neon</button>
-        <button data-theme="verde" class="preset-theme">Verde Matrix</button>
-        <button data-theme="rojo" class="preset-theme">Rojo Cyber</button>
-        <button data-theme="negro" class="preset-theme">Negro Elegante</button>
-        <button data-theme="rgb" class="preset-theme">RGB Animado</button>
-      </div>
-      <h3>Fondos</h3>
-      <div class="preset-bgs">
-        <button data-bg="espacio" class="preset-bg">Espacio</button>
-        <button data-bg="galaxia" class="preset-bg">Galaxia</button>
-        <button data-bg="circuitos" class="preset-bg">Circuitos</button>
-        <button data-bg="tecnologia" class="preset-bg">Tecnología</button>
-        <button data-bg="cyberpunk" class="preset-bg">Cyberpunk</button>
-        <button data-bg="aurora" class="preset-bg">Aurora</button>
-        <button data-bg="minimalista" class="preset-bg">Minimalista</button>
-      </div>
-      <div style="display:flex; gap:.5rem; margin-top:.6rem;">
-        <button id="preset-save" class="btn">Guardar</button>
-        <button id="preset-reset" class="btn secondary">Restablecer</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(panel);
-  const toggle = panel.querySelector('#preset-toggle');
-  const body = panel.querySelector('.preset-body');
-  if (toggle && body) on(toggle, 'click', () => { body.classList.toggle('open'); toggle.setAttribute('aria-expanded', String(body.classList.contains('open'))); });
-
-  // Delegate clicks inside panel to keep fewer listeners
-  on(panel, 'click', (ev) => {
-    const t = ev.target.closest('button[data-theme]');
-    if (t) { applyPresetTheme(t.getAttribute('data-theme')); return; }
-    const b = ev.target.closest('button[data-bg]');
-    if (b) { config.backgroundPreset = b.getAttribute('data-bg'); applyBackgroundPreset(config.backgroundPreset); return; }
-    if (ev.target.id === 'preset-save') { saveConfig(); alert('Preferencias guardadas.'); return; }
-    if (ev.target.id === 'preset-reset') { config = { ...defaultConfig }; applyTheme(); saveConfig(); alert('Configuración restablecida.'); return; }
-  });
-}
-
-function applyPresetTheme(name) {
-  switch (name) {
-    case 'azul':
-      config.background = '#071029';
-      config.buttonColor = '#00b0ff';
-      config.textColor = '#e6f7ff';
-      config.theme = 'dark';
-      config.animatedRGB = false;
-      break;
-    case 'morado':
-      config.background = '#120022';
-      config.buttonColor = '#8b5cf6';
-      config.textColor = '#f5e8ff';
-      config.theme = 'dark';
-      config.animatedRGB = false;
-      break;
-    case 'verde':
-      config.background = '#021307';
-      config.buttonColor = '#00ff66';
-      config.textColor = '#eafff0';
-      config.theme = 'dark';
-      config.animatedRGB = false;
-      break;
-    case 'rojo':
-      config.background = '#190909';
-      config.buttonColor = '#ff3b3b';
-      config.textColor = '#ffecec';
-      config.theme = 'dark';
-      config.animatedRGB = false;
-      break;
-    case 'negro':
-      config.background = '#000000';
-      config.buttonColor = '#6666ff';
-      config.textColor = '#e6e6e6';
-      config.theme = 'dark';
-      config.animatedRGB = false;
-      break;
-    case 'rgb':
-      config.background = '#07060b';
-      config.buttonColor = '#00e5ff';
-      config.textColor = '#fff3f3';
-      config.theme = 'dark';
-      config.animatedRGB = true;
-      break;
-    default:
-      break;
-  }
-  applyTheme();
-}
-
 function initWelcome() {
 document.body.classList.add('welcome-done');
 }
@@ -358,7 +257,6 @@ function init() {
   initSmoothScroll();
   initPageTransitions();
   initCyberOverlay();
-  initPresetPanel();
 }
 
 function initCyberOverlay() {

@@ -25,7 +25,7 @@ const perfil = {
     { nombre: "Ejercicios de fuerza y gimnasio", icono: "🏋️" },
     { nombre: "Conducir a lugares nuevos", icono: "🚗" }
   ],
-  habilidades: [
+  Habilidades: [
     "HTML5",
     "CSS3",
     "JavaScript",
